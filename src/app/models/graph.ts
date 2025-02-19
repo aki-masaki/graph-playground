@@ -1,11 +1,18 @@
 export class Graph {
+  public id: number
+  public name: string
+
   public nodes: Set<number>
   public edges: Map<number, Set<number>>
 
   public constructor(
+    id: number,
+    name: string = '',
     nodes: Set<number> = new Set(),
     edges: Map<number, Set<number>> = new Map(),
   ) {
+    this.id = id
+    this.name = name == '' ? `Graph ${id}` : name
     this.nodes = nodes
     this.edges = edges
   }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { AfterViewInit, Component, OnInit } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { Graph } from './models/graph'
 import { VisualGraph } from './models/visual-graph.model'
@@ -11,14 +11,14 @@ import { CanvasComponent } from './canvas/canvas.component'
   templateUrl: './app.component.html',
   styleUrl: './app.component.sass',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Graph Playground'
 
   public graphs: Map<number, Graph> = new Map()
   public visualGraphs: Map<number, VisualGraph> = new Map()
 
-  ngOnAfterInit() {
-    let graph = new Graph()
+  ngOnInit() {
+    let graph = new Graph(0)
 
     graph.addEdge(1, 2)
     graph.addEdge(1, 3)
