@@ -7,10 +7,36 @@ export class VisualNode {
   public x: number
   public y: number
 
+  private radius = 25
+
   public constructor(id: number, x: number, y: number) {
     this.id = id
     this.x = x
     this.y = y
+  }
+
+  public draw(ctx: CanvasRenderingContext2D, offset: [number, number] = [0, 0]) {
+    ctx.save()
+
+    ctx.fillStyle = '#211711'
+    ctx.strokeStyle = 'white'
+    ctx.lineWidth = 5
+
+    ctx.beginPath()
+    ctx.arc(this.x + offset[0], this.y + offset[1], this.radius, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.fill()
+
+    const textSize = ctx.measureText(this.id.toString())
+
+    const textWidth = textSize.width
+    const textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent
+
+    ctx.font = "bold 20px Arial"
+    ctx.fillStyle = 'white'
+    ctx.fillText(this.id.toString(), this.x + offset[0] - textWidth / 2, this.y + offset[1] + textHeight / 2)
+
+    ctx.restore()
   }
 }
 
@@ -29,6 +55,8 @@ export class VisualGraph {
   public static fromGraph(graph: Graph): VisualGraph {
     let visualGraph = new VisualGraph(graph)
     graph.nodes.forEach((node) => visualGraph.addNode(node))
+
+    visualGraph.autoArrangeNodes()
 
     return visualGraph
   }
@@ -61,7 +89,16 @@ export class VisualGraph {
   }
 
   private drawGraph(ctx: CanvasRenderingContext2D) {
-    // TODO: Implement drawing the graph
+    this.nodes.forEach(node => node.draw(ctx, [0, 50]))
+  }
+
+  private autoArrangeNodes() {
+    // TODO: Implement *smart* auto arrangement
+
+    this.nodes.forEach(node => {
+      node.x = node.id * 70
+      node.y = 30
+    })
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
