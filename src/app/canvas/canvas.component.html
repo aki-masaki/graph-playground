@@ -1,1 +1,7 @@
-<canvas #canvas> </canvas>
+<canvas
+  #canvas
+  (mousemove)="onMouseMove($event)"
+  (mousedown)="$event.preventDefault()"
+  (wheel)="onScroll($event)"
+>
+</canvas>

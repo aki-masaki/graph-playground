@@ -26,9 +26,12 @@ export class CanvasComponent implements AfterViewInit {
   @Input()
   public visualGraphs!: Map<number, VisualGraph>
 
+  public pan: { x: number; y: number } = { x: 50, y: 0 }
+  public zoom: number = 2
+
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
 
     this.setup()
@@ -37,13 +40,21 @@ export class CanvasComponent implements AfterViewInit {
 
   private drawBackground(ctx: CanvasRenderingContext2D) {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  }
 
+  private drawGrid(ctx: CanvasRenderingContext2D) {
     for (let i = 0; i < ctx.canvas.width / 50; i++) {
       for (let j = 0; j < ctx.canvas.height / 50; j++) {
         ctx.beginPath()
         ctx.fillStyle = '#2b2a2a'
 
-        ctx.arc(i * 50, j * 50, 5, 0, Math.PI * 2)
+        ctx.arc(
+          i * 50 + (this.pan.x % 50),
+          j * 50 + (this.pan.y % 50),
+          5,
+          0,
+          Math.PI * 2,
+        )
 
         ctx.fill()
       }
@@ -58,14 +69,35 @@ export class CanvasComponent implements AfterViewInit {
   public draw() {
     if (!this.ctx) return
 
+    this.ctx.save()
+
     this.ctx.clearRect(
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height
+      this.canvas.nativeElement.height,
     )
 
     this.drawBackground(this.ctx)
+    this.drawGrid(this.ctx)
+
+    this.ctx.translate(this.pan.x, this.pan.y)
+    this.ctx.scale(this.zoom, this.zoom)
     this.visualGraphs.forEach((graph) => graph.draw(this.ctx!!))
+
+    this.ctx.restore()
+
+    requestAnimationFrame(() => this.draw())
+  }
+
+  public onMouseMove(e: MouseEvent) {
+    if (e.buttons == 4) {
+      this.pan.x += e.movementX
+      this.pan.y += e.movementY
+    }
+  }
+
+  public onScroll(e: WheelEvent) {
+    this.zoom -= e.deltaY * 0.001
   }
 }
