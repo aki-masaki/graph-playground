@@ -28,10 +28,31 @@ export class CanvasComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d',
+      '2d'
     ) as CanvasRenderingContext2D
 
+    this.setup()
     this.draw()
+  }
+
+  private drawBackground(ctx: CanvasRenderingContext2D) {
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    for (let i = 0; i < ctx.canvas.width / 50; i++) {
+      for (let j = 0; j < ctx.canvas.height / 50; j++) {
+        ctx.beginPath()
+        ctx.fillStyle = '#2b2a2a'
+
+        ctx.arc(i * 50, j * 50, 5, 0, Math.PI * 2)
+
+        ctx.fill()
+      }
+    }
+  }
+
+  private setup() {
+    this.canvas.nativeElement.width = this.canvas.nativeElement.clientWidth
+    this.canvas.nativeElement.height = this.canvas.nativeElement.clientHeight
   }
 
   public draw() {
@@ -41,9 +62,10 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height,
+      this.canvas.nativeElement.height
     )
 
+    this.drawBackground(this.ctx)
     this.visualGraphs.forEach((graph) => graph.draw(this.ctx!!))
   }
 }

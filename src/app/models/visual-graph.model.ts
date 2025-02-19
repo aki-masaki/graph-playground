@@ -15,7 +15,10 @@ export class VisualNode {
     this.y = y
   }
 
-  public draw(ctx: CanvasRenderingContext2D, offset: [number, number] = [0, 0]) {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    offset: [number, number] = [0, 0],
+  ) {
     ctx.save()
 
     ctx.fillStyle = '#211711'
@@ -30,11 +33,16 @@ export class VisualNode {
     const textSize = ctx.measureText(this.id.toString())
 
     const textWidth = textSize.width
-    const textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent
+    const textHeight =
+      textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent
 
-    ctx.font = "bold 20px Arial"
+    ctx.font = 'bold 20px Arial'
     ctx.fillStyle = 'white'
-    ctx.fillText(this.id.toString(), this.x + offset[0] - textWidth / 2, this.y + offset[1] + textHeight / 2)
+    ctx.fillText(
+      this.id.toString(),
+      this.x + offset[0] - textWidth / 2,
+      this.y + offset[1] + textHeight / 2,
+    )
 
     ctx.restore()
   }
@@ -89,13 +97,13 @@ export class VisualGraph {
   }
 
   private drawGraph(ctx: CanvasRenderingContext2D) {
-    this.nodes.forEach(node => node.draw(ctx, [0, 50]))
+    this.nodes.forEach((node) => node.draw(ctx, [0, 50]))
   }
 
   private autoArrangeNodes() {
     // TODO: Implement *smart* auto arrangement
 
-    this.nodes.forEach(node => {
+    this.nodes.forEach((node) => {
       node.x = node.id * 70
       node.y = 30
     })
