@@ -1,10 +1,33 @@
 <div class="sidebar">
+  <div class="window" id="graphs-window">
+    <div class="header">
+      <span class="type">All Graphs</span>
+    </div>
+
+    <div class="content">
+      @for (graph of visualGraphs.entries(); track $index) {
+      <div
+        class="read-only property graph-container"
+        [class.selected]="selectedGraph?.graph?.id === graph[0]"
+        (click)="onSelect.emit(graph[0])"
+      >
+        <span>{{ graph[1].graph.name }}</span>
+        <span>{{ graph[0] }}</span>
+      </div>
+      }
+    </div>
+  </div>
   <div class="window" id="graph-info-window">
     <div class="header">
       <span class="type">Graph</span>
     </div>
 
     <div class="content">
+      <div class="property">
+        <span>Name</span>
+
+        <input [value]="selectedGraph?.graph?.name" />
+      </div>
     </div>
   </div>
 </div>

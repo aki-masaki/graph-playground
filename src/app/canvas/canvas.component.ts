@@ -26,12 +26,15 @@ export class CanvasComponent implements AfterViewInit {
   @Input()
   public visualGraphs!: Map<number, VisualGraph>
 
+  @Input()
+  public selectedGraph?: VisualGraph
+
   public pan: { x: number; y: number } = { x: 50, y: 0 }
   public zoom: number = 2
 
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d',
+      '2d'
     ) as CanvasRenderingContext2D
 
     this.setup()
@@ -53,7 +56,7 @@ export class CanvasComponent implements AfterViewInit {
           j * 50 + (this.pan.y % 50),
           5,
           0,
-          Math.PI * 2,
+          Math.PI * 2
         )
 
         ctx.fill()
@@ -75,7 +78,7 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height,
+      this.canvas.nativeElement.height
     )
 
     this.drawBackground(this.ctx)
@@ -83,7 +86,7 @@ export class CanvasComponent implements AfterViewInit {
 
     this.ctx.translate(this.pan.x, this.pan.y)
     this.ctx.scale(this.zoom, this.zoom)
-    this.visualGraphs.forEach((graph) => graph.draw(this.ctx!!))
+    this.visualGraphs.forEach((graph) => graph.draw(this.ctx!!, this.selectedGraph?.graph.id === graph.graph.id))
 
     this.ctx.restore()
 

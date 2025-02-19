@@ -17,7 +17,7 @@ export class VisualNode {
 
   public draw(
     ctx: CanvasRenderingContext2D,
-    offset: [number, number] = [0, 0],
+    offset: [number, number] = [0, 0]
   ) {
     ctx.save()
 
@@ -41,7 +41,7 @@ export class VisualNode {
     ctx.fillText(
       this.id.toString(),
       this.x + offset[0] - textWidth / 2,
-      this.y + offset[1] + textHeight / 2,
+      this.y + offset[1] + textHeight / 2
     )
 
     ctx.restore()
@@ -75,8 +75,13 @@ export class VisualGraph {
     this.nodes.set(id, new VisualNode(id, 0, 0))
   }
 
-  private drawContainer(ctx: CanvasRenderingContext2D) {
+  private drawContainer(
+    ctx: CanvasRenderingContext2D,
+    isSelected: boolean = false
+  ) {
     ctx.fillStyle = '#3a332f'
+    ctx.strokeStyle = isSelected ? '#56abd8' : '#3a332f'
+    ctx.lineWidth = 5;
     ctx.beginPath()
     ctx.roundRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h, 20)
     ctx.stroke()
@@ -92,12 +97,12 @@ export class VisualGraph {
     ctx.fillText(
       this.graph.name,
       this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30,
+      this.rect.y + 30
     )
   }
 
   private drawGraph(ctx: CanvasRenderingContext2D) {
-    this.nodes.forEach((node) => node.draw(ctx, [0, 50]))
+    this.nodes.forEach((node) => node.draw(ctx, [this.rect.x, this.rect.y + 50]))
   }
 
   private autoArrangeNodes() {
@@ -109,10 +114,10 @@ export class VisualGraph {
     })
   }
 
-  public draw(ctx: CanvasRenderingContext2D) {
+  public draw(ctx: CanvasRenderingContext2D, isSelected: boolean = false) {
     ctx.save()
 
-    this.drawContainer(ctx)
+    this.drawContainer(ctx, isSelected)
     this.drawTitle(ctx)
     this.drawGraph(ctx)
 

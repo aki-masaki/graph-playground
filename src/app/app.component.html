@@ -1,7 +1,15 @@
 <div class="container">
-  <app-sidebar />
+  <app-sidebar
+    [selectedGraph]="selectedGraph"
+    [visualGraphs]="visualGraphs"
+    (onSelect)="selectedGraph = visualGraphs.get($event)"
+  />
 
-  <app-canvas [graphs]="graphs" [visualGraphs]="visualGraphs"></app-canvas>
+  <app-canvas
+    [graphs]="graphs"
+    [visualGraphs]="visualGraphs"
+    [selectedGraph]="selectedGraph"
+  ></app-canvas>
 </div>
 
 <router-outlet />
