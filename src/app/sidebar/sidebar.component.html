@@ -24,9 +24,43 @@
 
     <div class="content">
       <div class="property">
-        <span>Name</span>
+        <app-input
+          [value]="selectedGraph?.graph?.name"
+          label="name"
+          (onValueChange)="selectedGraph!.graph!.name = $event"
+        />
+      </div>
 
-        <input [value]="selectedGraph?.graph?.name" />
+      <div class="property">
+        <app-input
+          [value]="selectedGraph?.rect?.x"
+          label="x"
+          (onValueChange)="selectedGraph!.rect!.x = parseInt($event)"
+        />
+      </div>
+
+      <div class="property">
+        <app-input
+          [value]="selectedGraph?.rect?.y"
+          label="y"
+          (onValueChange)="selectedGraph!.rect!.y = parseInt($event)"
+        />
+      </div>
+
+      <div class="property">
+        <app-input
+          [value]="selectedGraph?.rect?.w"
+          label="width"
+          (onValueChange)="selectedGraph!.rect!.w = parseInt($event)"
+        />
+      </div>
+
+      <div class="property">
+        <app-input
+          [value]="selectedGraph?.rect?.h"
+          label="height"
+          (onValueChange)="selectedGraph!.rect!.h = parseInt($event)"
+        />
       </div>
     </div>
   </div>
