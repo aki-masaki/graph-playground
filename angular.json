@@ -29,7 +29,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.sass"],
+            "styles": ["src/styles.sass", "node_modules/material-symbols/rounded.scss"],
             "scripts": []
           },
           "configurations": {

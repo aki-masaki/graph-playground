@@ -12,7 +12,14 @@
         (click)="onSelect.emit(graph[0])"
       >
         <span>{{ graph[1].graph.name }}</span>
-        <span>{{ graph[0] }}</span>
+
+        <div>
+          <span>{{ graph[0] }}</span>
+          <app-icon-button
+            icon="delete"
+            (onClick)="onDeleteGraph.emit(graph[0])"
+          />
+        </div>
       </div>
       }
 

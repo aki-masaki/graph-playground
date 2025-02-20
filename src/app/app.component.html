@@ -4,6 +4,7 @@
     [visualGraphs]="visualGraphs"
     (onSelect)="selectedGraph = visualGraphs.get($event)"
     (onCreateGraph)="createGraph()"
+    (onDeleteGraph)="deleteGraph($event)"
   />
 
   <app-canvas
