@@ -18,7 +18,7 @@ export class VisualNode {
   public move(
     deltaX: number,
     deltaY: number,
-    limits: [[number, number], [number, number]],
+    limits: [[number, number], [number, number]]
   ) {
     this.x += deltaX
     this.y += deltaY
@@ -30,7 +30,7 @@ export class VisualNode {
   public draw(
     ctx: CanvasRenderingContext2D,
     offset: [number, number] = [0, 0],
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.save()
 
@@ -54,7 +54,7 @@ export class VisualNode {
     ctx.fillText(
       this.id.toString(),
       this.x + offset[0] - textWidth / 2,
-      this.y + offset[1] + textHeight / 2,
+      this.y + offset[1] + textHeight / 2
     )
 
     ctx.restore()
@@ -72,6 +72,8 @@ export class VisualGraph {
 
   private highlightedNode?: VisualNode
   private draggedNode?: VisualNode
+
+  private isDragged: boolean = false
 
   public constructor(graph: Graph, nodes: Map<number, VisualNode> = new Map()) {
     this.graph = graph
@@ -96,14 +98,14 @@ export class VisualGraph {
   private drawContainer(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.fillStyle = '#3a332f'
     ctx.strokeStyle = isSelected
       ? '#56abd8'
       : isHighlighted
-        ? '#565656'
-        : '#3a332f'
+      ? '#565656'
+      : '#3a332f'
     ctx.lineWidth = 5
     ctx.beginPath()
     ctx.roundRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h, 20)
@@ -120,7 +122,7 @@ export class VisualGraph {
     ctx.fillText(
       this.graph.name,
       this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30,
+      this.rect.y + 30
     )
   }
 
@@ -129,8 +131,8 @@ export class VisualGraph {
       node.draw(
         ctx,
         [this.rect.x, this.rect.y + this.headerHeight],
-        this.highlightedNode?.id === node.id,
-      ),
+        this.highlightedNode?.id === node.id
+      )
     )
   }
 
@@ -146,7 +148,7 @@ export class VisualGraph {
   public draw(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.save()
 
@@ -157,12 +159,26 @@ export class VisualGraph {
     ctx.restore()
   }
 
+  public move(deltaX: number, deltaY: number) {
+    this.rect.x += deltaX
+    this.rect.y += deltaY
+
+    this.rect.x = Math.floor(this.rect.x)
+    this.rect.y = Math.floor(this.rect.y)
+  }
+
   public onMouseMove(
     relCoords: [number, number],
     delta: [number, number],
-    e: MouseEvent,
+    e: MouseEvent
   ) {
-    if (this.draggedNode)
+    if (e.buttons === 1 && relCoords[1] < this.headerHeight) {
+      this.isDragged = true
+    }
+
+    if (this.isDragged) this.move(delta[0], delta[1])
+
+    if (this.draggedNode && !this.isDragged)
       this.draggedNode.move(delta[0], delta[1], [
         [NODE_RADIUS, this.rect.w - NODE_RADIUS],
         [
@@ -173,7 +189,10 @@ export class VisualGraph {
 
     this.highlightedNode = undefined
 
-    if (e.buttons === 0) this.draggedNode = undefined
+    if (e.buttons === 0) {
+      this.draggedNode = undefined
+      this.isDragged = false
+    }
 
     this.nodes.forEach((node) => {
       if (
