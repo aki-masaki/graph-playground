@@ -126,6 +126,40 @@ export class VisualGraph {
     )
   }
 
+  private drawEdge(
+    ctx: CanvasRenderingContext2D,
+    a: VisualNode,
+    b: VisualNode,
+    offset: [number, number]
+  ) {
+    ctx.beginPath()
+
+    ctx.strokeStyle = 'white'
+    ctx.lineWidth = 3
+
+    // Delta
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+
+    // Distance
+    const len = Math.sqrt(dx * dx + dy * dy)
+
+    // Normalized
+    const ux = dx / len
+    const uy = dy / len
+
+    const ax = a.x + ux * NODE_RADIUS + offset[0]
+    const ay = a.y + uy * NODE_RADIUS + offset[1]
+
+    const bx = b.x - ux * NODE_RADIUS + offset[0]
+    const by = b.y - uy * NODE_RADIUS + offset[1]
+
+    ctx.moveTo(ax, ay)
+    ctx.lineTo(bx, by)
+
+    ctx.stroke()
+  }
+
   private drawGraph(ctx: CanvasRenderingContext2D) {
     this.nodes.forEach((node) =>
       node.draw(
@@ -134,6 +168,27 @@ export class VisualGraph {
         this.highlightedNode?.id === node.id
       )
     )
+
+    let used = new Set<number>()
+
+    this.graph.edges.forEach((neighbours, nodeId) => {
+      const node = this.nodes.get(nodeId)
+      if (!node || used.has(node.id)) return
+
+      used.add(node.id)
+
+      neighbours.forEach((neighbourId) => {
+        const neighbour = this.nodes.get(neighbourId)
+        if (!neighbour) return
+
+        used.add(neighbour.id)
+
+        this.drawEdge(ctx, node, neighbour, [
+          this.rect.x,
+          this.rect.y + this.headerHeight,
+        ])
+      })
+    })
   }
 
   private autoArrangeNodes() {
@@ -172,9 +227,8 @@ export class VisualGraph {
     delta: [number, number],
     e: MouseEvent
   ) {
-    if (e.buttons === 1 && relCoords[1] < this.headerHeight) {
+    if (e.buttons === 1 && relCoords[1] < this.headerHeight)
       this.isDragged = true
-    }
 
     if (this.isDragged) this.move(delta[0], delta[1])
 
