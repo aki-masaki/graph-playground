@@ -77,11 +77,16 @@ export class VisualGraph {
 
   private drawContainer(
     ctx: CanvasRenderingContext2D,
-    isSelected: boolean = false
+    isSelected: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.fillStyle = '#3a332f'
-    ctx.strokeStyle = isSelected ? '#56abd8' : '#3a332f'
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = isSelected
+      ? '#56abd8'
+      : isHighlighted
+      ? '#565656'
+      : '#3a332f'
+    ctx.lineWidth = 5
     ctx.beginPath()
     ctx.roundRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h, 20)
     ctx.stroke()
@@ -102,7 +107,9 @@ export class VisualGraph {
   }
 
   private drawGraph(ctx: CanvasRenderingContext2D) {
-    this.nodes.forEach((node) => node.draw(ctx, [this.rect.x, this.rect.y + 50]))
+    this.nodes.forEach((node) =>
+      node.draw(ctx, [this.rect.x, this.rect.y + 50])
+    )
   }
 
   private autoArrangeNodes() {
@@ -114,10 +121,14 @@ export class VisualGraph {
     })
   }
 
-  public draw(ctx: CanvasRenderingContext2D, isSelected: boolean = false) {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    isSelected: boolean = false,
+    isHighlighted: boolean = false
+  ) {
     ctx.save()
 
-    this.drawContainer(ctx, isSelected)
+    this.drawContainer(ctx, isSelected, isHighlighted)
     this.drawTitle(ctx)
     this.drawGraph(ctx)
 
