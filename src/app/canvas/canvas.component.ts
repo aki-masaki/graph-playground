@@ -9,6 +9,7 @@ import {
 } from '@angular/core'
 import { Graph } from '../models/graph'
 import { VisualGraph, VisualNode } from '../models/visual-graph.model'
+import { ContextMenu } from '../models/context-menu.model'
 
 @Component({
   selector: 'app-canvas',
@@ -42,13 +43,41 @@ export class CanvasComponent implements AfterViewInit {
   public pan: { x: number; y: number } = { x: 50, y: 0 }
   public zoom: number = 2
 
+  public contextMenu!: ContextMenu
+
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d',
+      '2d'
     ) as CanvasRenderingContext2D
 
     this.setup()
     this.draw()
+
+    this.setupContextMenu()
+  }
+
+  private setupContextMenu() {
+    this.contextMenu = new ContextMenu()
+
+    const createGraph = () => {}
+    createGraph.apply(this)
+
+    const createNode = () => {}
+    createNode.apply(this)
+
+    this.contextMenu.addOption(
+      'global',
+      'create-graph',
+      'Create graph',
+      createGraph
+    )
+
+    this.contextMenu.addOption(
+      'graph',
+      'create-node',
+      'Create node',
+      createNode
+    )
   }
 
   private drawBackground(ctx: CanvasRenderingContext2D) {
@@ -66,7 +95,7 @@ export class CanvasComponent implements AfterViewInit {
           j * 50 + (this.pan.y % 50),
           5,
           0,
-          Math.PI * 2,
+          Math.PI * 2
         )
 
         ctx.fill()
@@ -88,7 +117,7 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height,
+      this.canvas.nativeElement.height
     )
 
     this.drawBackground(this.ctx)
@@ -100,13 +129,19 @@ export class CanvasComponent implements AfterViewInit {
       graph.draw(
         this.ctx!!,
         this.selectedGraph?.graph.id === graph.graph.id,
-        this.highlightedGraph?.graph.id === graph.graph.id,
-      ),
+        this.highlightedGraph?.graph.id === graph.graph.id
+      )
     )
+
+    if (this.contextMenu?.isShown) this.contextMenu.draw(this.ctx)
 
     this.ctx.restore()
 
     requestAnimationFrame(() => this.draw())
+  }
+
+  public isInBounds(value: number, min: number, max: number, pan: number) {
+    return value > pan + min * this.zoom && value < pan + max * this.zoom
   }
 
   public onMouseMove(e: MouseEvent) {
@@ -117,14 +152,48 @@ export class CanvasComponent implements AfterViewInit {
       return
     }
 
+    if (
+      this.isInBounds(
+        e.clientX,
+        this.contextMenu.rect.x,
+        this.contextMenu.rect.x + this.contextMenu.rect.w,
+        this.pan.x
+      ) &&
+      this.isInBounds(
+        e.clientY,
+        this.contextMenu.rect.y,
+        this.contextMenu.rect.y + this.contextMenu.rect.h,
+        this.pan.y
+      )
+    )
+      this.contextMenu.onMouseMove([
+        Math.floor(
+          (e.clientX - (this.pan.x + this.contextMenu.rect.x * this.zoom)) /
+            this.zoom
+        ),
+        Math.floor(
+          (e.clientY - (this.pan.y + this.contextMenu.rect.y * this.zoom)) /
+            this.zoom
+        ),
+      ])
+    else this.contextMenu.highlightedOption = undefined
+
     this.highlightedGraph = undefined
 
     this.visualGraphs.forEach((graph) => {
       if (
-        e.clientX > this.pan.x + graph.rect.x * this.zoom &&
-        e.clientX < this.pan.x + (graph.rect.x + graph.rect.w) * this.zoom &&
-        e.clientY > this.pan.y + graph.rect.y * this.zoom &&
-        e.clientY < this.pan.y + (graph.rect.y + graph.rect.h) * this.zoom
+        this.isInBounds(
+          e.clientX,
+          graph.rect.x,
+          graph.rect.x + graph.rect.w,
+          this.pan.x
+        ) &&
+        this.isInBounds(
+          e.clientY,
+          graph.rect.y,
+          graph.rect.y + graph.rect.h,
+          this.pan.y
+        )
       ) {
         this.highlightedGraph = graph
 
@@ -133,15 +202,15 @@ export class CanvasComponent implements AfterViewInit {
             [
               Math.floor(
                 (e.clientX - (this.pan.x + graph.rect.x * this.zoom)) /
-                  this.zoom,
+                  this.zoom
               ),
               Math.floor(
                 (e.clientY - (this.pan.y + graph.rect.y * this.zoom)) /
-                  this.zoom,
+                  this.zoom
               ),
             ],
             [e.movementX / this.zoom, e.movementY / this.zoom],
-            e,
+            e
           )
       }
     })
@@ -152,10 +221,41 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   public onDoubleClick() {
-    console.log(this.highlightedGraph)
-
     if (!this.highlightedGraph) return
 
     this.onSelect.emit(this.highlightedGraph.graph.id)
+  }
+
+  public onContextMenu(e: MouseEvent) {
+    e.preventDefault()
+
+    if (this.highlightedGraph) this.contextMenu.changeCollection('graph')
+    else this.contextMenu.changeCollection('global')
+
+    this.contextMenu.show([
+      (e.clientX - this.pan.x) / this.zoom,
+      (e.clientY - this.pan.y) / this.zoom,
+    ])
+  }
+
+  public onMouseDown(e: MouseEvent) {
+    e.preventDefault()
+
+    if (
+      this.isInBounds(
+        e.clientX,
+        this.contextMenu.rect.x,
+        this.contextMenu.rect.x + this.contextMenu.rect.w,
+        this.pan.x
+      ) &&
+      this.isInBounds(
+        e.clientY,
+        this.contextMenu.rect.y,
+        this.contextMenu.rect.y + this.contextMenu.rect.h,
+        this.pan.y
+      )
+    )
+      this.contextMenu.onMouseDown()
+    else this.contextMenu.hide()
   }
 }

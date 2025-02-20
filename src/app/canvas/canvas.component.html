@@ -1,8 +1,9 @@
 <canvas
   #canvas
   (mousemove)="onMouseMove($event)"
-  (mousedown)="$event.preventDefault()"
+  (mousedown)="onMouseDown($event)"
   (wheel)="onScroll($event)"
   (dblclick)="onDoubleClick()"
+  (contextmenu)="onContextMenu($event)"
 >
 </canvas>

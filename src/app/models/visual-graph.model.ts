@@ -128,8 +128,8 @@ export class VisualGraph {
 
   private drawEdge(
     ctx: CanvasRenderingContext2D,
-    a: VisualNode,
-    b: VisualNode,
+    a: [number, number],
+    b: [number, number],
     offset: [number, number]
   ) {
     ctx.beginPath()
@@ -138,8 +138,8 @@ export class VisualGraph {
     ctx.lineWidth = 3
 
     // Delta
-    const dx = b.x - a.x
-    const dy = b.y - a.y
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
 
     // Distance
     const len = Math.sqrt(dx * dx + dy * dy)
@@ -148,11 +148,11 @@ export class VisualGraph {
     const ux = dx / len
     const uy = dy / len
 
-    const ax = a.x + ux * NODE_RADIUS + offset[0]
-    const ay = a.y + uy * NODE_RADIUS + offset[1]
+    const ax = a[0] + ux * NODE_RADIUS + offset[0]
+    const ay = a[1] + uy * NODE_RADIUS + offset[1]
 
-    const bx = b.x - ux * NODE_RADIUS + offset[0]
-    const by = b.y - uy * NODE_RADIUS + offset[1]
+    const bx = b[0] - ux * NODE_RADIUS + offset[0]
+    const by = b[1] - uy * NODE_RADIUS + offset[1]
 
     ctx.moveTo(ax, ay)
     ctx.lineTo(bx, by)
@@ -183,10 +183,12 @@ export class VisualGraph {
 
         used.add(neighbour.id)
 
-        this.drawEdge(ctx, node, neighbour, [
-          this.rect.x,
-          this.rect.y + this.headerHeight,
-        ])
+        this.drawEdge(
+          ctx,
+          [node.x, node.y],
+          [neighbour.x, neighbour.y],
+          [this.rect.x, this.rect.y + this.headerHeight]
+        )
       })
     })
   }
@@ -227,8 +229,7 @@ export class VisualGraph {
     delta: [number, number],
     e: MouseEvent
   ) {
-    if (e.buttons === 1 && relCoords[1] < this.headerHeight)
-      this.isDragged = true
+    if (e.buttons === 1 && !this.highlightedNode) this.isDragged = true
 
     if (this.isDragged) this.move(delta[0], delta[1])
 

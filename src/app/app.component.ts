@@ -26,10 +26,7 @@ export class AppComponent implements OnInit {
     let graphB = new Graph(1)
 
     graphA.addEdge(1, 2)
-    graphA.addEdge(1, 3)
-
-    graphB.addEdge(1, 2)
-    graphB.addEdge(2, 3)
+    graphA.addEdge(2, 3)
 
     this.graphs.set(0, graphA)
     this.visualGraphs.set(0, VisualGraph.fromGraph(graphA))
@@ -39,6 +36,6 @@ export class AppComponent implements OnInit {
 
     this.visualGraphs.get(1)!.rect.x = 500
 
-    this.selectedGraph = this.visualGraphs.get(0)
+    this.selectedGraph = this.visualGraphs.get(1)
   }
 }
