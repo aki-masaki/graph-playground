@@ -64,31 +64,40 @@ export class CanvasComponent implements AfterViewInit {
   private setupContextMenu() {
     this.contextMenu = new ContextMenu()
 
-    const createGraph = () => this.onCreateGraph.emit()
-
-    const createNode = () => {}
-
-    const deleteGraph = (graphId: number) => this.onDeleteGraph.emit(graphId)
-
-    this.contextMenu.addOption(
-      'global',
-      'create-graph',
-      'Create graph',
-      createGraph
+    this.contextMenu.addOption('global', 'create-graph', 'Create graph', () =>
+      this.onCreateGraph.emit()
     )
 
     this.contextMenu.addOption(
       'graph',
       'create-node',
       'Create node',
-      createNode
+      (graphId: number) => {
+        this.visualGraphs.get(graphId)!.addNode(undefined)
+
+        this.visualGraphs.get(graphId)!.autoArrangeNodes()
+      }
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-graph',
       'Delete graph',
-      deleteGraph
+      (graphId: number) => this.onDeleteGraph.emit(graphId)
+    )
+
+    this.contextMenu.addOption(
+      'graph',
+      'delete-all-nodes',
+      'Delete all nodes',
+      (graphId: number) => this.visualGraphs.get(graphId)!.removeAllNodes()
+    )
+
+    this.contextMenu.addOption(
+      'node',
+      'delete-node',
+      'Delete node',
+      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId)
     )
   }
 
@@ -241,7 +250,13 @@ export class CanvasComponent implements AfterViewInit {
   public onContextMenu(e: MouseEvent) {
     e.preventDefault()
 
-    if (this.highlightedGraph) {
+    if (this.selectedGraph?.highlightedNode) {
+      this.contextMenu.setData([
+        this.selectedGraph.graph.id,
+        this.selectedGraph.highlightedNode.id,
+      ])
+      this.contextMenu.changeCollection('node')
+    } else if (this.highlightedGraph) {
       this.contextMenu.setData(this.highlightedGraph.graph.id)
       this.contextMenu.changeCollection('graph')
     } else this.contextMenu.changeCollection('global')

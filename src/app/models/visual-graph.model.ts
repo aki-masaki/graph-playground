@@ -70,7 +70,7 @@ export class VisualGraph {
 
   private headerHeight = 50
 
-  private highlightedNode?: VisualNode
+  public highlightedNode?: VisualNode
   private draggedNode?: VisualNode
 
   private isDragged: boolean = false
@@ -89,10 +89,25 @@ export class VisualGraph {
     return visualGraph
   }
 
-  public addNode(id: number) {
+  public addNode(id: number | undefined) {
+    if (!id) id = this.nodes.size + 1
+
     if (this.nodes.has(id)) return
 
     this.nodes.set(id, new VisualNode(id, 0, 0))
+    this.graph.nodes.add(id)
+  }
+
+  public removeNode(id: number) {
+    if (!this.nodes.has(id)) return
+
+    this.nodes.delete(id)
+    this.graph.nodes.delete(id)
+  }
+
+  public removeAllNodes() {
+    this.nodes = new Map()
+    this.graph.nodes = new Set()
   }
 
   private drawContainer(
@@ -193,7 +208,7 @@ export class VisualGraph {
     })
   }
 
-  private autoArrangeNodes() {
+  public autoArrangeNodes() {
     // TODO: Implement *smart* auto arrangement
 
     this.nodes.forEach((node) => {
