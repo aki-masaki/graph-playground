@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core'
 import { Graph } from '../models/graph'
-import { VisualGraph } from '../models/visual-graph.model'
+import { VisualGraph, VisualNode } from '../models/visual-graph.model'
 
 @Component({
   selector: 'app-canvas',
@@ -31,6 +31,9 @@ export class CanvasComponent implements AfterViewInit {
   @Input()
   public selectedGraph?: VisualGraph
 
+  @Input()
+  public selectedNode?: VisualNode
+
   public highlightedGraph?: VisualGraph
 
   @Output()
@@ -41,7 +44,7 @@ export class CanvasComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
 
     this.setup()
@@ -63,7 +66,7 @@ export class CanvasComponent implements AfterViewInit {
           j * 50 + (this.pan.y % 50),
           5,
           0,
-          Math.PI * 2
+          Math.PI * 2,
         )
 
         ctx.fill()
@@ -85,7 +88,7 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height
+      this.canvas.nativeElement.height,
     )
 
     this.drawBackground(this.ctx)
@@ -97,8 +100,8 @@ export class CanvasComponent implements AfterViewInit {
       graph.draw(
         this.ctx!!,
         this.selectedGraph?.graph.id === graph.graph.id,
-        this.highlightedGraph?.graph.id === graph.graph.id
-      )
+        this.highlightedGraph?.graph.id === graph.graph.id,
+      ),
     )
 
     this.ctx.restore()
@@ -122,8 +125,25 @@ export class CanvasComponent implements AfterViewInit {
         e.clientX < this.pan.x + (graph.rect.x + graph.rect.w) * this.zoom &&
         e.clientY > this.pan.y + graph.rect.y * this.zoom &&
         e.clientY < this.pan.y + (graph.rect.y + graph.rect.h) * this.zoom
-      )
+      ) {
         this.highlightedGraph = graph
+
+        if (this.selectedGraph?.graph.id === graph.graph.id)
+          graph.onMouseMove(
+            [
+              Math.floor(
+                (e.clientX - (this.pan.x + graph.rect.x * this.zoom)) /
+                  this.zoom,
+              ),
+              Math.floor(
+                (e.clientY - (this.pan.y + graph.rect.y * this.zoom)) /
+                  this.zoom,
+              ),
+            ],
+            [e.movementX / this.zoom, e.movementY / this.zoom],
+            e,
+          )
+      }
     })
   }
 

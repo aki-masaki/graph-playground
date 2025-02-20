@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { Graph } from './models/graph'
-import { VisualGraph } from './models/visual-graph.model'
+import { VisualGraph, VisualNode } from './models/visual-graph.model'
 import { CanvasComponent } from './canvas/canvas.component'
 import { SidebarComponent } from './sidebar/sidebar.component'
 
@@ -19,6 +19,7 @@ export class AppComponent implements OnInit {
   public visualGraphs: Map<number, VisualGraph> = new Map()
 
   public selectedGraph?: VisualGraph
+  public selectedNode?: VisualNode
 
   ngOnInit() {
     let graphA = new Graph(0)
@@ -36,7 +37,7 @@ export class AppComponent implements OnInit {
     this.graphs.set(1, graphB)
     this.visualGraphs.set(1, VisualGraph.fromGraph(graphB))
 
-    this.visualGraphs.get(1)!.rect.x = 500;
+    this.visualGraphs.get(1)!.rect.x = 500
 
     this.selectedGraph = this.visualGraphs.get(0)
   }

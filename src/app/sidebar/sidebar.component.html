@@ -6,14 +6,14 @@
 
     <div class="content">
       @for (graph of visualGraphs.entries(); track $index) {
-      <div
-        class="read-only property graph-container"
-        [class.selected]="selectedGraph?.graph?.id === graph[0]"
-        (click)="onSelect.emit(graph[0])"
-      >
-        <span>{{ graph[1].graph.name }}</span>
-        <span>{{ graph[0] }}</span>
-      </div>
+        <div
+          class="read-only property graph-container"
+          [class.selected]="selectedGraph?.graph?.id === graph[0]"
+          (click)="onSelect.emit(graph[0])"
+        >
+          <span>{{ graph[1].graph.name }}</span>
+          <span>{{ graph[0] }}</span>
+        </div>
       }
     </div>
   </div>
