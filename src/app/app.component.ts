@@ -49,4 +49,13 @@ export class AppComponent implements OnInit {
 
     this.selectedGraph = visualGraph
   }
+
+  public deleteGraph(id: number) {
+    this.graphs.delete(id)
+    this.visualGraphs.delete(id)
+
+    if (this.selectedGraph?.graph.id === id)
+      this.selectedGraph =
+        this.visualGraphs.size > 0 ? this.visualGraphs.get(id - 1) : undefined
+  }
 }

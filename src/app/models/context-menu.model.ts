@@ -5,7 +5,7 @@ const OPTION_HEIGHT = 25
 export interface ContextMenuOption {
   id: string
   label: string
-  onClick: () => void
+  onClick: (data: any) => void
 }
 
 export class ContextMenu {
@@ -18,6 +18,8 @@ export class ContextMenu {
 
   public highlightedOption?: number
 
+  public data?: any
+
   public constructor() {
     this.collections = new Map()
   }
@@ -26,7 +28,7 @@ export class ContextMenu {
     collectionId: string,
     id: string,
     label: string,
-    onClick: () => void
+    onClick: (data: any) => void
   ) {
     const collection = this.collections.get(collectionId)
 
@@ -50,6 +52,10 @@ export class ContextMenu {
     this.rect.h = this.collections.get(collection)!.length * OPTION_HEIGHT
 
     this.activeCollection = collection
+  }
+
+  public setData(data: any) {
+    this.data = data
   }
 
   public hide() {
@@ -100,11 +106,11 @@ export class ContextMenu {
   }
 
   public onMouseDown() {
-    if (this.highlightedOption === undefined) return
+    if (!this.isShown || this.highlightedOption === undefined) return
 
     this.collections
       .get(this.activeCollection ?? '')
-      ?.[this.highlightedOption].onClick()
+      ?.[this.highlightedOption].onClick(this.data)
 
     this.hide()
   }

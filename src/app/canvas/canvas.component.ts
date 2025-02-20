@@ -42,6 +42,8 @@ export class CanvasComponent implements AfterViewInit {
 
   @Output()
   public onCreateGraph: EventEmitter<void> = new EventEmitter<void>()
+  @Output()
+  public onDeleteGraph: EventEmitter<number> = new EventEmitter<number>()
 
   public pan: { x: number; y: number } = { x: 50, y: 0 }
   public zoom: number = 2
@@ -63,10 +65,10 @@ export class CanvasComponent implements AfterViewInit {
     this.contextMenu = new ContextMenu()
 
     const createGraph = () => this.onCreateGraph.emit()
-    createGraph.apply(this)
 
     const createNode = () => {}
-    createNode.apply(this)
+
+    const deleteGraph = (graphId: number) => this.onDeleteGraph.emit(graphId)
 
     this.contextMenu.addOption(
       'global',
@@ -80,6 +82,13 @@ export class CanvasComponent implements AfterViewInit {
       'create-node',
       'Create node',
       createNode
+    )
+
+    this.contextMenu.addOption(
+      'graph',
+      'delete-graph',
+      'Delete graph',
+      deleteGraph
     )
   }
 
@@ -232,8 +241,10 @@ export class CanvasComponent implements AfterViewInit {
   public onContextMenu(e: MouseEvent) {
     e.preventDefault()
 
-    if (this.highlightedGraph) this.contextMenu.changeCollection('graph')
-    else this.contextMenu.changeCollection('global')
+    if (this.highlightedGraph) {
+      this.contextMenu.setData(this.highlightedGraph.graph.id)
+      this.contextMenu.changeCollection('graph')
+    } else this.contextMenu.changeCollection('global')
 
     this.contextMenu.show([
       (e.clientX - this.pan.x) / this.zoom,
