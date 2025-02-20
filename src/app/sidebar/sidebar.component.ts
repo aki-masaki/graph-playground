@@ -19,6 +19,9 @@ export class SidebarComponent {
   @Output()
   public onSelect: EventEmitter<number> = new EventEmitter<number>()
 
+  @Output()
+  public onCreateGraph: EventEmitter<void> = new EventEmitter<void>()
+
   public parseInt(value: string) {
     return parseInt(value)
   }

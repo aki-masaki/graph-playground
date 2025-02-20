@@ -38,4 +38,15 @@ export class AppComponent implements OnInit {
 
     this.selectedGraph = this.visualGraphs.get(1)
   }
+
+  public createGraph() {
+    const id = this.graphs.size
+    const graph = new Graph(this.graphs.size)
+    const visualGraph = VisualGraph.fromGraph(graph)
+
+    this.graphs.set(id, graph)
+    this.visualGraphs.set(id, visualGraph)
+
+    this.selectedGraph = visualGraph
+  }
 }

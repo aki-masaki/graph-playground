@@ -105,5 +105,7 @@ export class ContextMenu {
     this.collections
       .get(this.activeCollection ?? '')
       ?.[this.highlightedOption].onClick()
+
+    this.hide()
   }
 }

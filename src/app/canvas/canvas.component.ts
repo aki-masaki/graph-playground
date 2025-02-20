@@ -40,6 +40,9 @@ export class CanvasComponent implements AfterViewInit {
   @Output()
   public onSelect: EventEmitter<number> = new EventEmitter<number>()
 
+  @Output()
+  public onCreateGraph: EventEmitter<void> = new EventEmitter<void>()
+
   public pan: { x: number; y: number } = { x: 50, y: 0 }
   public zoom: number = 2
 
@@ -59,7 +62,7 @@ export class CanvasComponent implements AfterViewInit {
   private setupContextMenu() {
     this.contextMenu = new ContextMenu()
 
-    const createGraph = () => {}
+    const createGraph = () => this.onCreateGraph.emit()
     createGraph.apply(this)
 
     const createNode = () => {}
