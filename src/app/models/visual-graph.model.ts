@@ -63,6 +63,14 @@ export class VisualNode {
 
     ctx.restore()
   }
+
+  public serialize() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+    }
+  }
 }
 
 export class VisualGraph {
@@ -70,7 +78,7 @@ export class VisualGraph {
 
   public graph: Graph
 
-  public rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
+  public rect!: Rect
 
   public highlightedNode?: VisualNode
   private draggedNode?: VisualNode
@@ -86,9 +94,14 @@ export class VisualGraph {
 
   private highlightedSizeDirection: [number, number] = [0, 0]
 
-  public constructor(graph: Graph, nodes: Map<number, VisualNode> = new Map()) {
+  public constructor(
+    graph: Graph,
+    nodes: Map<number, VisualNode> = new Map(),
+    rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
+  ) {
     this.graph = graph
     this.nodes = nodes
+    this.rect = rect
   }
 
   public static fromGraph(graph: Graph): VisualGraph {
@@ -366,6 +379,8 @@ export class VisualGraph {
 
     this.rect.x = Math.floor(this.rect.x)
     this.rect.y = Math.floor(this.rect.y)
+
+    console.log(this)
   }
 
   public resize(direction: [number, number], delta: [number, number]) {
@@ -473,6 +488,14 @@ export class VisualGraph {
 
         this.disableConnectMode()
       }
+    }
+  }
+
+  public serialize() {
+    return {
+      nodes: Array.from(this.nodes).map((node) => node[1].serialize()),
+      rect: this.rect,
+      id: this.graph.id
     }
   }
 }

@@ -5,6 +5,9 @@
     (onSelect)="selectedGraph = visualGraphs.get($event)"
     (onCreateGraph)="createGraph()"
     (onDeleteGraph)="deleteGraph($event)"
+    (onSaveFile)="onSaveFile($event)"
+    (onOpenFile)="onOpenFile($event)"
+    (onResetFile)="reset()"
   />
 
   <app-canvas

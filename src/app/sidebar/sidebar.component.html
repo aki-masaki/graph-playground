@@ -1,4 +1,42 @@
 <div class="sidebar">
+  <div class="menu">
+    <div class="option">
+      <span>File</span>
+    </div>
+
+    <div class="option">
+      <span>Options</span>
+    </div>
+  </div>
+
+  <div class="window menu-window" id="file-menu-window">
+    <div class="header">
+      <span class="type">File</span>
+    </div>
+
+    <div class="content">
+      <app-input
+        [value]="fileName"
+        (onValueChange)="fileName = $event"
+        label="name"
+      />
+
+      <input type="file" #fileInput (change)="onFileChange()" />
+
+      <div class="button" (click)="onSaveFile.emit(['disk', fileName])">
+        <span>Save to disk</span>
+      </div>
+
+      <div class="button" (click)="openFilePicker()">
+        <span>Open from disk</span>
+      </div>
+
+      <div class="button" (click)="onResetFile.emit()">
+        <span>Reset file</span>
+      </div>
+    </div>
+  </div>
+
   <div class="window" id="graphs-window">
     <div class="header">
       <span class="type">All Graphs</span>
@@ -28,6 +66,7 @@
       </div>
     </div>
   </div>
+
   <div class="window" id="graph-info-window">
     <div class="header">
       <span class="type">Graph</span>

@@ -8,7 +8,11 @@ import {
   ViewChild,
 } from '@angular/core'
 import { Graph } from '../models/graph'
-import { HEADER_HEIGHT, VisualGraph, VisualNode } from '../models/visual-graph.model'
+import {
+  HEADER_HEIGHT,
+  VisualGraph,
+  VisualNode,
+} from '../models/visual-graph.model'
 import { ContextMenu } from '../models/context-menu.model'
 
 @Component({
@@ -337,5 +341,28 @@ export class CanvasComponent implements AfterViewInit {
     if (this.highlightedGraph) {
       this.highlightedGraph.onMouseDown()
     }
+  }
+
+  public serialize() {
+    return {
+      pan: this.pan,
+      zoom: this.zoom,
+    }
+  }
+
+  public import(data: { pan: { x: number; y: number }; zoom: number }) {
+    this.reset()
+
+    this.pan = data.pan
+    this.zoom = data.zoom
+  }
+
+  public reset() {
+    this.highlightedGraph = undefined
+    this.selectedNode = undefined
+    this.selectedGraph = undefined
+
+    this.pan = { x: 0, y: 0 }
+    this.zoom = 1
   }
 }

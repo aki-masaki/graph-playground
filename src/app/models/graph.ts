@@ -31,8 +31,6 @@ export class Graph {
 
     this.edges.get(a)!.add(b)
     this.edges.get(b)!.add(a)
-
-    console.log(this.edges)
   }
 
   public removeNode(nodeId: number) {
@@ -48,5 +46,17 @@ export class Graph {
 
     if (this.edges.get(a)!.size === 0) this.edges.delete(a)
     if (this.edges.get(b)!.size === 0) this.edges.delete(b)
+  }
+
+  public serialize() {
+    return {
+      nodes: Array.from(this.nodes),
+      edges: Array.from(this.edges).map((value) => [
+        value[0],
+        Array.from(value[1]),
+      ]),
+      id: this.id,
+      name: this.name,
+    }
   }
 }
