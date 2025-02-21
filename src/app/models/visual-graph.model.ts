@@ -75,6 +75,13 @@ export class VisualGraph {
 
   private isDragged: boolean = false
 
+  private inConnectMode: boolean = false
+  private inDisconnectMode: boolean = false
+  private connectNode?: VisualNode
+
+  private mouseX: number = 0
+  private mouseY: number = 0
+
   public constructor(graph: Graph, nodes: Map<number, VisualNode> = new Map()) {
     this.graph = graph
     this.nodes = nodes
@@ -90,9 +97,15 @@ export class VisualGraph {
   }
 
   public addNode(id: number | undefined) {
-    if (!id) id = this.nodes.size + 1
+    for (let i = 1; i < this.nodes.size + 2; i++) {
+      if (!this.nodes.has(i)) {
+        id = i
 
-    if (this.nodes.has(id)) return
+        break
+      }
+    }
+
+    if (id === undefined || this.nodes.has(id)) return
 
     this.nodes.set(id, new VisualNode(id, 0, 0))
     this.graph.nodes.add(id)
@@ -102,12 +115,25 @@ export class VisualGraph {
     if (!this.nodes.has(id)) return
 
     this.nodes.delete(id)
-    this.graph.nodes.delete(id)
+    this.graph.removeNode(id)
   }
 
   public removeAllNodes() {
     this.nodes = new Map()
     this.graph.nodes = new Set()
+    this.graph.edges = new Map()
+  }
+
+  public enableConnectMode(nodeId: number, inDisconnectMode: boolean = false) {
+    this.inConnectMode = true
+    this.inDisconnectMode = inDisconnectMode
+    this.connectNode = this.nodes.get(nodeId)
+  }
+
+  public disableConnectMode() {
+    this.inConnectMode = false
+    this.inDisconnectMode = false
+    this.connectNode = undefined
   }
 
   private drawContainer(
@@ -145,7 +171,8 @@ export class VisualGraph {
     ctx: CanvasRenderingContext2D,
     a: [number, number],
     b: [number, number],
-    offset: [number, number]
+    offset: [number, number],
+    useCenter: [boolean, boolean] = [false, false]
   ) {
     ctx.beginPath()
 
@@ -169,8 +196,11 @@ export class VisualGraph {
     const bx = b[0] - ux * NODE_RADIUS + offset[0]
     const by = b[1] - uy * NODE_RADIUS + offset[1]
 
-    ctx.moveTo(ax, ay)
-    ctx.lineTo(bx, by)
+    if (useCenter[0]) ctx.moveTo(a[0] + offset[0], a[1] + offset[1])
+    else ctx.moveTo(ax, ay)
+
+    if (useCenter[1]) ctx.lineTo(b[0] + offset[0], b[1] + offset[1])
+    else ctx.lineTo(bx, by)
 
     ctx.stroke()
   }
@@ -184,19 +214,20 @@ export class VisualGraph {
       )
     )
 
-    let used = new Set<number>()
+    let drawn = new Set<string>()
 
     this.graph.edges.forEach((neighbours, nodeId) => {
       const node = this.nodes.get(nodeId)
-      if (!node || used.has(node.id)) return
-
-      used.add(node.id)
+      if (!node) return
 
       neighbours.forEach((neighbourId) => {
+        const key = `${node.id}-${neighbourId}`
+        if (drawn.has(key)) return
+
         const neighbour = this.nodes.get(neighbourId)
         if (!neighbour) return
 
-        used.add(neighbour.id)
+        drawn.add(key)
 
         this.drawEdge(
           ctx,
@@ -206,6 +237,16 @@ export class VisualGraph {
         )
       })
     })
+
+    if (this.inConnectMode && this.connectNode) {
+      this.drawEdge(
+        ctx,
+        [this.connectNode.x, this.connectNode.y],
+        [this.mouseX, this.mouseY - this.headerHeight],
+        [this.rect.x, this.rect.y + this.headerHeight],
+        [false, true]
+      )
+    }
   }
 
   public autoArrangeNodes() {
@@ -244,6 +285,11 @@ export class VisualGraph {
     delta: [number, number],
     e: MouseEvent
   ) {
+    if (this.inConnectMode) {
+      this.mouseX = relCoords[0]
+      this.mouseY = relCoords[1]
+    }
+
     if (e.buttons === 1 && !this.highlightedNode) this.isDragged = true
 
     if (this.isDragged) this.move(delta[0], delta[1])
@@ -277,5 +323,17 @@ export class VisualGraph {
           this.draggedNode = this.highlightedNode
       }
     })
+  }
+
+  public onMouseDown() {
+    if (this.inConnectMode && this.connectNode) {
+      if (this.highlightedNode) {
+        if (this.inDisconnectMode)
+          this.graph.removeEdge(this.connectNode.id, this.highlightedNode.id)
+        else this.graph.addEdge(this.connectNode.id, this.highlightedNode.id)
+      }
+
+      this.disableConnectMode()
+    }
   }
 }

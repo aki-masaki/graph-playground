@@ -99,6 +99,20 @@ export class CanvasComponent implements AfterViewInit {
       'Delete node',
       ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId)
     )
+
+    this.contextMenu.addOption(
+      'node',
+      'connect',
+      'Connect',
+      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.enableConnectMode(nodeId)
+    )
+
+    this.contextMenu.addOption(
+      'node',
+      'disconnect',
+      'Disconnect',
+      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true)
+    )
   }
 
   private drawBackground(ctx: CanvasRenderingContext2D) {
@@ -286,5 +300,9 @@ export class CanvasComponent implements AfterViewInit {
     )
       this.contextMenu.onMouseDown()
     else this.contextMenu.hide()
+
+    if (this.highlightedGraph) {
+      this.highlightedGraph.onMouseDown()
+    }
   }
 }
