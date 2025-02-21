@@ -39,10 +39,13 @@ export class AppComponent implements OnInit {
     this.selectedGraph = this.visualGraphs.get(1)
   }
 
-  public createGraph() {
+  public createGraph(coords: [number, number] = [0, 0]) {
     const id = this.graphs.size
     const graph = new Graph(this.graphs.size)
     const visualGraph = VisualGraph.fromGraph(graph)
+
+    visualGraph.rect.x = coords[0]
+    visualGraph.rect.y = coords[1]
 
     this.graphs.set(id, graph)
     this.visualGraphs.set(id, visualGraph)

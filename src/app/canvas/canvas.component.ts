@@ -41,7 +41,9 @@ export class CanvasComponent implements AfterViewInit {
   public onSelect: EventEmitter<number> = new EventEmitter<number>()
 
   @Output()
-  public onCreateGraph: EventEmitter<void> = new EventEmitter<void>()
+  public onCreateGraph: EventEmitter<[number, number]> = new EventEmitter<
+    [number, number]
+  >()
   @Output()
   public onDeleteGraph: EventEmitter<number> = new EventEmitter<number>()
 
@@ -64,8 +66,18 @@ export class CanvasComponent implements AfterViewInit {
   private setupContextMenu() {
     this.contextMenu = new ContextMenu()
 
-    this.contextMenu.addOption('global', 'create-graph', 'Create graph', () =>
-      this.onCreateGraph.emit()
+    this.contextMenu.addOption(
+      'global',
+      'create-graph',
+      'Create graph',
+      ([mouseX, mouseY]) => {
+        this.onCreateGraph.emit([
+          (mouseX - this.pan.x) / this.zoom,
+          (mouseY - this.pan.y) / this.zoom,
+        ])
+
+        console.log(mouseX, this.pan.x, this.zoom)
+      }
     )
 
     this.contextMenu.addOption(
@@ -104,14 +116,16 @@ export class CanvasComponent implements AfterViewInit {
       'node',
       'connect',
       'Connect',
-      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.enableConnectMode(nodeId)
+      ([graphId, nodeId]) =>
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId)
     )
 
     this.contextMenu.addOption(
       'node',
       'disconnect',
       'Disconnect',
-      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true)
+      ([graphId, nodeId]) =>
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true)
     )
   }
 
@@ -273,7 +287,10 @@ export class CanvasComponent implements AfterViewInit {
     } else if (this.highlightedGraph) {
       this.contextMenu.setData(this.highlightedGraph.graph.id)
       this.contextMenu.changeCollection('graph')
-    } else this.contextMenu.changeCollection('global')
+    } else {
+      this.contextMenu.setData([e.clientX, e.clientY])
+      this.contextMenu.changeCollection('global')
+    }
 
     this.contextMenu.show([
       (e.clientX - this.pan.x) / this.zoom,

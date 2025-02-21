@@ -12,7 +12,7 @@
     [visualGraphs]="visualGraphs"
     [selectedGraph]="selectedGraph"
     (onSelect)="selectedGraph = visualGraphs.get($event)"
-    (onCreateGraph)="createGraph()"
+    (onCreateGraph)="createGraph($event)"
     (onDeleteGraph)="deleteGraph($event)"
   ></app-canvas>
 </div>

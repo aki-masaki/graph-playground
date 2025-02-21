@@ -2,6 +2,10 @@ import { Rect } from '../interfaces/rect'
 import { Graph } from './graph'
 
 const NODE_RADIUS = 25
+const HEADER_HEIGHT = 50
+
+const SIZE_HANDLER_RADIUS = 10
+const SIZE_HANDLER_MARGIN = 18
 
 export class VisualNode {
   public id: number
@@ -68,8 +72,6 @@ export class VisualGraph {
 
   public rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
 
-  private headerHeight = 50
-
   public highlightedNode?: VisualNode
   private draggedNode?: VisualNode
 
@@ -81,6 +83,8 @@ export class VisualGraph {
 
   private mouseX: number = 0
   private mouseY: number = 0
+
+  private highlightedSizeDirection: [number, number] = [0, 0]
 
   public constructor(graph: Graph, nodes: Map<number, VisualNode> = new Map()) {
     this.graph = graph
@@ -147,11 +151,95 @@ export class VisualGraph {
       : isHighlighted
       ? '#565656'
       : '#3a332f'
+
     ctx.lineWidth = 5
+
     ctx.beginPath()
+
     ctx.roundRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h, 20)
+
     ctx.stroke()
     ctx.fill()
+
+    ctx.lineWidth = 3
+
+    this.drawSizeHandlers(ctx)
+  }
+
+  private drawSizeHandlers(ctx: CanvasRenderingContext2D) {
+    ctx.strokeStyle = '#776f76'
+
+    if (
+      this.highlightedSizeDirection[0] === 1 &&
+      this.highlightedSizeDirection[1] === 1
+    )
+      ctx.strokeStyle = 'white'
+
+    ctx.beginPath()
+    ctx.arc(
+      this.rect.x + this.rect.w - SIZE_HANDLER_MARGIN,
+      this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
+      SIZE_HANDLER_RADIUS,
+      0,
+      Math.PI / 2
+    )
+    ctx.stroke()
+
+    ctx.strokeStyle = '#776f76'
+
+    if (
+      this.highlightedSizeDirection[0] === -1 &&
+      this.highlightedSizeDirection[1] === 1
+    )
+      ctx.strokeStyle = 'white'
+
+    ctx.beginPath()
+    ctx.arc(
+      this.rect.x + SIZE_HANDLER_MARGIN,
+      this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
+      10,
+      Math.PI / 2,
+      Math.PI
+    )
+    ctx.stroke()
+
+    ctx.strokeStyle = '#776f76'
+
+    if (
+      this.highlightedSizeDirection[0] === -1 &&
+      this.highlightedSizeDirection[1] === -1
+    )
+      ctx.strokeStyle = 'white'
+
+    ctx.beginPath()
+    ctx.arc(
+      this.rect.x + SIZE_HANDLER_MARGIN,
+      this.rect.y + SIZE_HANDLER_MARGIN,
+      10,
+      Math.PI,
+      (3 * Math.PI) / 2
+    )
+    ctx.stroke()
+
+    ctx.strokeStyle = '#776f76'
+
+    if (
+      this.highlightedSizeDirection[0] === 1 &&
+      this.highlightedSizeDirection[1] === -1
+    )
+      ctx.strokeStyle = 'white'
+
+    ctx.beginPath()
+    ctx.arc(
+      this.rect.x + this.rect.w - SIZE_HANDLER_MARGIN,
+      this.rect.y + SIZE_HANDLER_MARGIN,
+      10,
+      (3 * Math.PI) / 2,
+      Math.PI * 2
+    )
+    ctx.stroke()
+
+    ctx.strokeStyle = '#776f76'
   }
 
   private drawTitle(ctx: CanvasRenderingContext2D) {
@@ -209,7 +297,7 @@ export class VisualGraph {
     this.nodes.forEach((node) =>
       node.draw(
         ctx,
-        [this.rect.x, this.rect.y + this.headerHeight],
+        [this.rect.x, this.rect.y + HEADER_HEIGHT],
         this.highlightedNode?.id === node.id
       )
     )
@@ -233,7 +321,7 @@ export class VisualGraph {
           ctx,
           [node.x, node.y],
           [neighbour.x, neighbour.y],
-          [this.rect.x, this.rect.y + this.headerHeight]
+          [this.rect.x, this.rect.y + HEADER_HEIGHT]
         )
       })
     })
@@ -242,8 +330,8 @@ export class VisualGraph {
       this.drawEdge(
         ctx,
         [this.connectNode.x, this.connectNode.y],
-        [this.mouseX, this.mouseY - this.headerHeight],
-        [this.rect.x, this.rect.y + this.headerHeight],
+        [this.mouseX, this.mouseY - HEADER_HEIGHT],
+        [this.rect.x, this.rect.y + HEADER_HEIGHT],
         [false, true]
       )
     }
@@ -280,6 +368,25 @@ export class VisualGraph {
     this.rect.y = Math.floor(this.rect.y)
   }
 
+  public resize(direction: [number, number], delta: [number, number]) {
+    if (direction[0] === 1) this.rect.w += delta[0]
+    else if (direction[0] === -1) {
+      this.rect.x += delta[0]
+      this.rect.w -= delta[0]
+    }
+
+    if (direction[1] === 1) this.rect.h += delta[1]
+    else if (direction[1] === -1) {
+      this.rect.y += delta[1]
+      this.rect.h -= delta[1]
+    }
+
+    this.rect.x = Math.round(this.rect.x)
+    this.rect.y = Math.round(this.rect.y)
+    this.rect.w = Math.round(this.rect.w)
+    this.rect.h = Math.round(this.rect.h)
+  }
+
   public onMouseMove(
     relCoords: [number, number],
     delta: [number, number],
@@ -290,6 +397,32 @@ export class VisualGraph {
       this.mouseY = relCoords[1]
     }
 
+    if (relCoords[0] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN * 2) {
+      if (relCoords[1] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN)
+        this.highlightedSizeDirection = [-1, -1]
+      else if (
+        relCoords[1] >
+        this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
+      )
+        this.highlightedSizeDirection = [-1, 1]
+    } else if (relCoords[0] > this.rect.w - SIZE_HANDLER_MARGIN) {
+      if (relCoords[1] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN / 2)
+        this.highlightedSizeDirection = [1, -1]
+      else if (
+        relCoords[1] >
+        this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
+      )
+        this.highlightedSizeDirection = [1, 1]
+    } else {
+      this.highlightedSizeDirection = [0, 0]
+    }
+
+    if (e.buttons === 1) {
+      this.resize(this.highlightedSizeDirection, delta)
+
+      return
+    }
+
     if (e.buttons === 1 && !this.highlightedNode) this.isDragged = true
 
     if (this.isDragged) this.move(delta[0], delta[1])
@@ -298,8 +431,8 @@ export class VisualGraph {
       this.draggedNode.move(delta[0], delta[1], [
         [NODE_RADIUS, this.rect.w - NODE_RADIUS],
         [
-          this.headerHeight - NODE_RADIUS,
-          this.rect.h - this.headerHeight - NODE_RADIUS,
+          HEADER_HEIGHT - NODE_RADIUS,
+          this.rect.h - HEADER_HEIGHT - NODE_RADIUS,
         ],
       ])
 
@@ -314,8 +447,8 @@ export class VisualGraph {
       if (
         relCoords[0] > node.x - NODE_RADIUS &&
         relCoords[0] < node.x + NODE_RADIUS &&
-        relCoords[1] > node.y - NODE_RADIUS + this.headerHeight &&
-        relCoords[1] < node.y + NODE_RADIUS + this.headerHeight
+        relCoords[1] > node.y - NODE_RADIUS + HEADER_HEIGHT &&
+        relCoords[1] < node.y + NODE_RADIUS + HEADER_HEIGHT
       ) {
         this.highlightedNode = node
 
