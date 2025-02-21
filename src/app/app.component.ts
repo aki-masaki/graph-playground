@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { Graph } from './models/graph'
 import { VisualGraph, VisualNode } from './models/visual-graph.model'
@@ -23,6 +23,12 @@ export type FileData = {
     pan: { x: number; y: number }
     zoom: number
   }
+  selectedGraph: {
+    nodes: { id: number; x: number; y: number }[]
+    rect: Rect
+    id: number
+    name: string
+  }
 }
 
 @Component({
@@ -32,7 +38,7 @@ export type FileData = {
   templateUrl: './app.component.html',
   styleUrl: './app.component.sass',
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   title = 'Graph Playground'
 
   public graphs: Map<number, Graph> = new Map()
@@ -43,6 +49,17 @@ export class AppComponent {
 
   @ViewChild(CanvasComponent)
   private canvas!: CanvasComponent
+
+  private autoSaveInterval?: number
+
+  public ngAfterViewInit(): void {
+    this.onOpenFile(['localstorage', ''])
+
+    this.autoSaveInterval = window.setInterval(
+      () => this.onSaveFile(['localstorage', '']),
+      1000 * 10 // 10 seconds
+    )
+  }
 
   public createGraph(coords: [number, number] = [0, 0]) {
     const id = this.graphs.size
@@ -70,7 +87,7 @@ export class AppComponent {
   public serialize() {
     return JSON.stringify({
       visualGraphs: Array.from(this.visualGraphs).map((value) =>
-        value[1].serialize(),
+        value[1].serialize()
       ),
       graphs: Array.from(this.graphs).map((value) => value[1].serialize()),
       canvas: this.canvas.serialize(),
@@ -94,15 +111,16 @@ export class AppComponent {
   }
 
   public onSaveFile(e: [string, string]) {
-    if (e[0] === 'disk') {
-      this.download(e[1], this.serialize())
-    }
+    if (e[0] === 'disk') this.download(e[1], this.serialize())
+    else if (e[0] === 'localstorage')
+      window.localStorage.setItem('auto-save', this.serialize())
   }
 
   public onOpenFile(e: [string, string]) {
-    if (e[0] === 'disk') {
-      this.import(JSON.parse(e[1]))
-    }
+    if (e[0] === 'disk') this.import(JSON.parse(e[1]))
+    else if (e[0] === 'localstorage')
+      if (window.localStorage.getItem('auto-save'))
+        this.import(JSON.parse(window.localStorage.getItem('auto-save')!))
   }
 
   public import(data: FileData) {
@@ -118,8 +136,8 @@ export class AppComponent {
           graph.id,
           graph.name,
           new Set(graph.nodes),
-          new Map(graph.edges.map((value) => [value[0], new Set(value[1])])),
-        ),
+          new Map(graph.edges.map((value) => [value[0], new Set(value[1])]))
+        )
       )
     })
 
@@ -132,10 +150,10 @@ export class AppComponent {
             Array.from(graph.nodes).map((node) => [
               node.id,
               new VisualNode(node.id, node.x, node.y),
-            ]),
+            ])
           ),
-          graph.rect,
-        ),
+          graph.rect
+        )
       )
     })
 
@@ -143,6 +161,18 @@ export class AppComponent {
 
     this.graphs = graphs
     this.visualGraphs = visualGraphs
+
+    if (data.selectedGraph)
+      this.selectedGraph = new VisualGraph(
+        graphs.get(data.selectedGraph.id)!,
+        new Map(
+          Array.from(data.selectedGraph.nodes).map((node) => [
+            node.id,
+            new VisualNode(node.id, node.x, node.y),
+          ])
+        ),
+        data.selectedGraph.rect
+      )
   }
 
   public reset() {
