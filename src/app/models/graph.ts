@@ -9,7 +9,7 @@ export class Graph {
     id: number,
     name: string = '',
     nodes: Set<number> = new Set(),
-    edges: Map<number, Set<number>> = new Map()
+    edges: Map<number, Set<number>> = new Map(),
   ) {
     this.id = id
     this.name = name == '' ? `Graph ${id}` : name
@@ -24,8 +24,6 @@ export class Graph {
   }
 
   public addEdge(a: number, b: number) {
-    console.log(this.edges)
-
     this.addNode(a)
     this.addNode(b)
 

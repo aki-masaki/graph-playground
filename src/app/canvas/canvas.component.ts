@@ -58,7 +58,7 @@ export class CanvasComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
 
     this.setup()
@@ -74,14 +74,11 @@ export class CanvasComponent implements AfterViewInit {
       'global',
       'create-graph',
       'Create graph',
-      ([mouseX, mouseY]) => {
+      ([mouseX, mouseY]) =>
         this.onCreateGraph.emit([
           (mouseX - this.pan.x) / this.zoom,
           (mouseY - this.pan.y) / this.zoom,
-        ])
-
-        console.log(mouseX, this.pan.x, this.zoom)
-      }
+        ]),
     )
 
     this.contextMenu.addOption(
@@ -94,39 +91,39 @@ export class CanvasComponent implements AfterViewInit {
             (mouseX -
               (this.pan.x +
                 this.visualGraphs.get(graphId)!.rect.x * this.zoom)) /
-              this.zoom
+              this.zoom,
           ),
           Math.floor(
             (mouseY -
               (this.pan.y +
                 this.visualGraphs.get(graphId)!.rect.y * this.zoom)) /
-              this.zoom
+              this.zoom,
           ) - HEADER_HEIGHT,
         ]
 
         this.visualGraphs.get(graphId)!.addNode(undefined, relCoords)
-      }
+      },
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-graph',
       'Delete graph',
-      ([graphId]) => this.onDeleteGraph.emit(graphId)
+      ([graphId]) => this.onDeleteGraph.emit(graphId),
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-all-nodes',
       'Delete all nodes',
-      ([graphId]) => this.visualGraphs.get(graphId)!.removeAllNodes()
+      ([graphId]) => this.visualGraphs.get(graphId)!.removeAllNodes(),
     )
 
     this.contextMenu.addOption(
       'node',
       'delete-node',
       'Delete node',
-      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId)
+      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId),
     )
 
     this.contextMenu.addOption(
@@ -134,7 +131,7 @@ export class CanvasComponent implements AfterViewInit {
       'connect',
       'Connect',
       ([graphId, nodeId]) =>
-        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId)
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId),
     )
 
     this.contextMenu.addOption(
@@ -142,7 +139,7 @@ export class CanvasComponent implements AfterViewInit {
       'disconnect',
       'Disconnect',
       ([graphId, nodeId]) =>
-        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true)
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true),
     )
   }
 
@@ -161,7 +158,7 @@ export class CanvasComponent implements AfterViewInit {
           j * 50 + (this.pan.y % 50),
           5,
           0,
-          Math.PI * 2
+          Math.PI * 2,
         )
 
         ctx.fill()
@@ -183,7 +180,7 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height
+      this.canvas.nativeElement.height,
     )
 
     this.drawBackground(this.ctx)
@@ -195,8 +192,8 @@ export class CanvasComponent implements AfterViewInit {
       graph.draw(
         this.ctx!!,
         this.selectedGraph?.graph.id === graph.graph.id,
-        this.highlightedGraph?.graph.id === graph.graph.id
-      )
+        this.highlightedGraph?.graph.id === graph.graph.id,
+      ),
     )
 
     if (this.contextMenu?.isShown) this.contextMenu.draw(this.ctx)
@@ -223,23 +220,23 @@ export class CanvasComponent implements AfterViewInit {
         e.clientX,
         this.contextMenu.rect.x,
         this.contextMenu.rect.x + this.contextMenu.rect.w,
-        this.pan.x
+        this.pan.x,
       ) &&
       this.isInBounds(
         e.clientY,
         this.contextMenu.rect.y,
         this.contextMenu.rect.y + this.contextMenu.rect.h,
-        this.pan.y
+        this.pan.y,
       )
     )
       this.contextMenu.onMouseMove([
         Math.floor(
           (e.clientX - (this.pan.x + this.contextMenu.rect.x * this.zoom)) /
-            this.zoom
+            this.zoom,
         ),
         Math.floor(
           (e.clientY - (this.pan.y + this.contextMenu.rect.y * this.zoom)) /
-            this.zoom
+            this.zoom,
         ),
       ])
     else this.contextMenu.highlightedOption = undefined
@@ -252,13 +249,13 @@ export class CanvasComponent implements AfterViewInit {
           e.clientX,
           graph.rect.x,
           graph.rect.x + graph.rect.w,
-          this.pan.x
+          this.pan.x,
         ) &&
         this.isInBounds(
           e.clientY,
           graph.rect.y,
           graph.rect.y + graph.rect.h,
-          this.pan.y
+          this.pan.y,
         )
       ) {
         this.highlightedGraph = graph
@@ -268,15 +265,15 @@ export class CanvasComponent implements AfterViewInit {
             [
               Math.floor(
                 (e.clientX - (this.pan.x + graph.rect.x * this.zoom)) /
-                  this.zoom
+                  this.zoom,
               ),
               Math.floor(
                 (e.clientY - (this.pan.y + graph.rect.y * this.zoom)) /
-                  this.zoom
+                  this.zoom,
               ),
             ],
             [e.movementX / this.zoom, e.movementY / this.zoom],
-            e
+            e,
           )
       }
     })
@@ -287,7 +284,11 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   public onDoubleClick() {
-    if (!this.highlightedGraph) return
+    if (!this.highlightedGraph) {
+      this.onSelect.emit(-1)
+
+      return
+    }
 
     this.onSelect.emit(this.highlightedGraph.graph.id)
   }
@@ -326,13 +327,13 @@ export class CanvasComponent implements AfterViewInit {
         e.clientX,
         this.contextMenu.rect.x,
         this.contextMenu.rect.x + this.contextMenu.rect.w,
-        this.pan.x
+        this.pan.x,
       ) &&
       this.isInBounds(
         e.clientY,
         this.contextMenu.rect.y,
         this.contextMenu.rect.y + this.contextMenu.rect.h,
-        this.pan.y
+        this.pan.y,
       )
     )
       this.contextMenu.onMouseDown()

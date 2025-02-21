@@ -22,7 +22,7 @@ export class VisualNode {
   public move(
     deltaX: number,
     deltaY: number,
-    limits: [[number, number], [number, number]]
+    limits: [[number, number], [number, number]],
   ) {
     this.x += deltaX
     this.y += deltaY
@@ -34,7 +34,7 @@ export class VisualNode {
   public draw(
     ctx: CanvasRenderingContext2D,
     offset: [number, number] = [0, 0],
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     ctx.save()
 
@@ -58,7 +58,7 @@ export class VisualNode {
     ctx.fillText(
       this.id.toString(),
       this.x + offset[0] - textWidth / 2,
-      this.y + offset[1] + textHeight / 2
+      this.y + offset[1] + textHeight / 2,
     )
 
     ctx.restore()
@@ -97,7 +97,7 @@ export class VisualGraph {
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
+    rect: Rect = { x: 0, y: 0, w: 300, h: 150 },
   ) {
     this.graph = graph
     this.nodes = nodes
@@ -156,14 +156,14 @@ export class VisualGraph {
   private drawContainer(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     ctx.fillStyle = '#3a332f'
     ctx.strokeStyle = isSelected
       ? '#56abd8'
       : isHighlighted
-      ? '#565656'
-      : '#3a332f'
+        ? '#565656'
+        : '#3a332f'
 
     ctx.lineWidth = 5
 
@@ -194,7 +194,7 @@ export class VisualGraph {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       SIZE_HANDLER_RADIUS,
       0,
-      Math.PI / 2
+      Math.PI / 2,
     )
     ctx.stroke()
 
@@ -212,7 +212,7 @@ export class VisualGraph {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       10,
       Math.PI / 2,
-      Math.PI
+      Math.PI,
     )
     ctx.stroke()
 
@@ -230,7 +230,7 @@ export class VisualGraph {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       Math.PI,
-      (3 * Math.PI) / 2
+      (3 * Math.PI) / 2,
     )
     ctx.stroke()
 
@@ -248,7 +248,7 @@ export class VisualGraph {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       (3 * Math.PI) / 2,
-      Math.PI * 2
+      Math.PI * 2,
     )
     ctx.stroke()
 
@@ -264,7 +264,7 @@ export class VisualGraph {
     ctx.fillText(
       this.graph.name,
       this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30
+      this.rect.y + 30,
     )
   }
 
@@ -273,7 +273,7 @@ export class VisualGraph {
     a: [number, number],
     b: [number, number],
     offset: [number, number],
-    useCenter: [boolean, boolean] = [false, false]
+    useCenter: [boolean, boolean] = [false, false],
   ) {
     ctx.beginPath()
 
@@ -311,8 +311,8 @@ export class VisualGraph {
       node.draw(
         ctx,
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        this.highlightedNode?.id === node.id
-      )
+        this.highlightedNode?.id === node.id,
+      ),
     )
 
     let drawn = new Set<string>()
@@ -334,7 +334,7 @@ export class VisualGraph {
           ctx,
           [node.x, node.y],
           [neighbour.x, neighbour.y],
-          [this.rect.x, this.rect.y + HEADER_HEIGHT]
+          [this.rect.x, this.rect.y + HEADER_HEIGHT],
         )
       })
     })
@@ -345,7 +345,7 @@ export class VisualGraph {
         [this.connectNode.x, this.connectNode.y],
         [this.mouseX, this.mouseY - HEADER_HEIGHT],
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        [false, true]
+        [false, true],
       )
     }
   }
@@ -362,7 +362,7 @@ export class VisualGraph {
   public draw(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     ctx.save()
 
@@ -379,8 +379,6 @@ export class VisualGraph {
 
     this.rect.x = Math.floor(this.rect.x)
     this.rect.y = Math.floor(this.rect.y)
-
-    console.log(this)
   }
 
   public resize(direction: [number, number], delta: [number, number]) {
@@ -405,7 +403,7 @@ export class VisualGraph {
   public onMouseMove(
     relCoords: [number, number],
     delta: [number, number],
-    e: MouseEvent
+    e: MouseEvent,
   ) {
     if (this.inConnectMode) {
       this.mouseX = relCoords[0]
@@ -495,7 +493,7 @@ export class VisualGraph {
     return {
       nodes: Array.from(this.nodes).map((node) => node[1].serialize()),
       rect: this.rect,
-      id: this.graph.id
+      id: this.graph.id,
     }
   }
 }

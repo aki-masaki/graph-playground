@@ -1,41 +1,62 @@
 <div class="sidebar">
   <div class="menu">
-    <div class="option">
+    <div class="option" (click)="openMenuWindow('file')">
       <span>File</span>
     </div>
 
-    <div class="option">
+    <div class="option" (click)="openMenuWindow('options')">
       <span>Options</span>
     </div>
   </div>
 
-  <div class="window menu-window" id="file-menu-window">
-    <div class="header">
-      <span class="type">File</span>
+  @if (activeMenuWindow === "file") {
+    <div class="window menu-window" id="file-menu-window">
+      <div class="header">
+        <span class="type">File</span>
+      </div>
+
+      <div class="content">
+        <app-input
+          [value]="fileName"
+          (onValueChange)="fileName = $event"
+          label="name"
+        />
+
+        <input type="file" #fileInput (change)="onFileChange()" />
+
+        <div class="button" (click)="onSaveFile.emit(['disk', fileName])">
+          <span>Save to disk</span>
+        </div>
+
+        <div class="button" (click)="openFilePicker()">
+          <span>Open from disk</span>
+        </div>
+
+        <div class="button" (click)="onResetFile.emit()">
+          <span>Reset file</span>
+        </div>
+      </div>
     </div>
-
-    <div class="content">
-      <app-input
-        [value]="fileName"
-        (onValueChange)="fileName = $event"
-        label="name"
-      />
-
-      <input type="file" #fileInput (change)="onFileChange()" />
-
-      <div class="button" (click)="onSaveFile.emit(['disk', fileName])">
-        <span>Save to disk</span>
+  }
+  @if (activeMenuWindow === "options") {
+    <div class="window menu-window" id="options-menu-window">
+      <div class="header">
+        <span class="type">Options</span>
       </div>
 
-      <div class="button" (click)="openFilePicker()">
-        <span>Open from disk</span>
-      </div>
-
-      <div class="button" (click)="onResetFile.emit()">
-        <span>Reset file</span>
+      <div
+        class="content"
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 1.5em;
+        "
+      >
+        <span>Not yet implemented!</span>
       </div>
     </div>
-  </div>
+  }
 
   <div class="window" id="graphs-window">
     <div class="header">
@@ -44,21 +65,21 @@
 
     <div class="content">
       @for (graph of visualGraphs.entries(); track $index) {
-      <div
-        class="read-only property graph-container"
-        [class.selected]="selectedGraph?.graph?.id === graph[0]"
-        (click)="onSelect.emit(graph[0])"
-      >
-        <span>{{ graph[1].graph.name }}</span>
+        <div
+          class="read-only property graph-container"
+          [class.selected]="selectedGraph?.graph?.id === graph[0]"
+          (click)="onSelect.emit(graph[0])"
+        >
+          <span>{{ graph[1].graph.name }}</span>
 
-        <div>
-          <span>{{ graph[0] }}</span>
-          <app-icon-button
-            icon="delete"
-            (onClick)="onDeleteGraph.emit(graph[0])"
-          />
+          <div>
+            <span>{{ graph[0] }}</span>
+            <app-icon-button
+              icon="delete"
+              (onClick)="onDeleteGraph.emit(graph[0])"
+            />
+          </div>
         </div>
-      </div>
       }
 
       <div class="button" (click)="onCreateGraph.emit()">
@@ -67,51 +88,53 @@
     </div>
   </div>
 
-  <div class="window" id="graph-info-window">
-    <div class="header">
-      <span class="type">Graph</span>
+  @if (selectedGraph) {
+    <div class="window" id="graph-info-window">
+      <div class="header">
+        <span class="type">Graph</span>
+      </div>
+
+      <div class="content">
+        <div class="property">
+          <app-input
+            [value]="selectedGraph.graph.name"
+            label="name"
+            (onValueChange)="selectedGraph!.graph!.name = $event"
+          />
+        </div>
+
+        <div class="property">
+          <app-input
+            [value]="selectedGraph.rect.x"
+            label="x"
+            (onValueChange)="selectedGraph!.rect!.x = parseInt($event)"
+          />
+        </div>
+
+        <div class="property">
+          <app-input
+            [value]="selectedGraph.rect.y"
+            label="y"
+            (onValueChange)="selectedGraph!.rect!.y = parseInt($event)"
+          />
+        </div>
+
+        <div class="property">
+          <app-input
+            [value]="selectedGraph.rect.w"
+            label="width"
+            (onValueChange)="selectedGraph!.rect!.w = parseInt($event)"
+          />
+        </div>
+
+        <div class="property">
+          <app-input
+            [value]="selectedGraph.rect.h"
+            label="height"
+            (onValueChange)="selectedGraph!.rect!.h = parseInt($event)"
+          />
+        </div>
+      </div>
     </div>
-
-    <div class="content">
-      <div class="property">
-        <app-input
-          [value]="selectedGraph?.graph?.name"
-          label="name"
-          (onValueChange)="selectedGraph!.graph!.name = $event"
-        />
-      </div>
-
-      <div class="property">
-        <app-input
-          [value]="selectedGraph?.rect?.x"
-          label="x"
-          (onValueChange)="selectedGraph!.rect!.x = parseInt($event)"
-        />
-      </div>
-
-      <div class="property">
-        <app-input
-          [value]="selectedGraph?.rect?.y"
-          label="y"
-          (onValueChange)="selectedGraph!.rect!.y = parseInt($event)"
-        />
-      </div>
-
-      <div class="property">
-        <app-input
-          [value]="selectedGraph?.rect?.w"
-          label="width"
-          (onValueChange)="selectedGraph!.rect!.w = parseInt($event)"
-        />
-      </div>
-
-      <div class="property">
-        <app-input
-          [value]="selectedGraph?.rect?.h"
-          label="height"
-          (onValueChange)="selectedGraph!.rect!.h = parseInt($event)"
-        />
-      </div>
-    </div>
-  </div>
+  }
 </div>

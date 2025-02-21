@@ -48,12 +48,16 @@ export class SidebarComponent {
   @ViewChild('fileInput')
   private fileInput!: ElementRef<HTMLInputElement>
 
+  public activeMenuWindow: 'file' | 'options' | '' = ''
+
   public openFilePicker() {
     this.fileInput.nativeElement.click()
   }
 
   public onFileChange() {
-    this.fileName = this.fileInput.nativeElement.files?.[0].name.replace('.json', '') ?? 'Graph'
+    this.fileName =
+      this.fileInput.nativeElement.files?.[0].name.replace('.json', '') ??
+      'Graph'
 
     this.fileInput.nativeElement.files?.[0]
       .text()
@@ -62,5 +66,9 @@ export class SidebarComponent {
 
   public parseInt(value: string) {
     return parseInt(value)
+  }
+
+  public openMenuWindow(window: 'file' | 'options') {
+    this.activeMenuWindow = this.activeMenuWindow === window ? '' : window
   }
 }

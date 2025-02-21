@@ -28,7 +28,7 @@ export class ContextMenu {
     collectionId: string,
     id: string,
     label: string,
-    onClick: (data: any) => void
+    onClick: (data: any) => void,
   ) {
     const collection = this.collections.get(collectionId)
 
@@ -83,7 +83,7 @@ export class ContextMenu {
             this.rect.y + index * OPTION_HEIGHT + 3,
             this.rect.w - 6,
             OPTION_HEIGHT - 6,
-            5
+            5,
           )
           ctx.fill()
         }
@@ -94,7 +94,7 @@ export class ContextMenu {
         ctx.fillText(
           option.label,
           this.rect.x + 5,
-          this.rect.y + index * OPTION_HEIGHT + OPTION_HEIGHT / 2
+          this.rect.y + index * OPTION_HEIGHT + OPTION_HEIGHT / 2,
         )
       })
 

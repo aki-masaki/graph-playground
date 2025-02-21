@@ -70,7 +70,7 @@ export class AppComponent {
   public serialize() {
     return JSON.stringify({
       visualGraphs: Array.from(this.visualGraphs).map((value) =>
-        value[1].serialize()
+        value[1].serialize(),
       ),
       graphs: Array.from(this.graphs).map((value) => value[1].serialize()),
       canvas: this.canvas.serialize(),
@@ -81,7 +81,6 @@ export class AppComponent {
   public download(fileName: string, data: string) {
     const blob = new Blob([data], { type: 'application/json' })
     const url = window.URL.createObjectURL(blob)
-    console.log(url)
     const anchor = document.createElement('a')
 
     document.body.appendChild(anchor)
@@ -119,8 +118,8 @@ export class AppComponent {
           graph.id,
           graph.name,
           new Set(graph.nodes),
-          new Map(graph.edges.map((value) => [value[0], new Set(value[1])]))
-        )
+          new Map(graph.edges.map((value) => [value[0], new Set(value[1])])),
+        ),
       )
     })
 
@@ -133,10 +132,10 @@ export class AppComponent {
             Array.from(graph.nodes).map((node) => [
               node.id,
               new VisualNode(node.id, node.x, node.y),
-            ])
+            ]),
           ),
-          graph.rect
-        )
+          graph.rect,
+        ),
       )
     })
 
