@@ -2,7 +2,7 @@ import { Rect } from '../interfaces/rect'
 import { Graph } from './graph'
 
 const NODE_RADIUS = 25
-const HEADER_HEIGHT = 50
+export const HEADER_HEIGHT = 50
 
 const SIZE_HANDLER_RADIUS = 10
 const SIZE_HANDLER_MARGIN = 18
@@ -100,7 +100,7 @@ export class VisualGraph {
     return visualGraph
   }
 
-  public addNode(id: number | undefined) {
+  public addNode(id: number | undefined, coords: [number, number] = [0, 0]) {
     for (let i = 1; i < this.nodes.size + 2; i++) {
       if (!this.nodes.has(i)) {
         id = i
@@ -111,7 +111,7 @@ export class VisualGraph {
 
     if (id === undefined || this.nodes.has(id)) return
 
-    this.nodes.set(id, new VisualNode(id, 0, 0))
+    this.nodes.set(id, new VisualNode(id, coords[0], coords[1]))
     this.graph.nodes.add(id)
   }
 
@@ -405,6 +405,12 @@ export class VisualGraph {
         this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
       )
         this.highlightedSizeDirection = [-1, 1]
+
+      if (e.buttons === 1) {
+        this.resize(this.highlightedSizeDirection, delta)
+
+        return
+      }
     } else if (relCoords[0] > this.rect.w - SIZE_HANDLER_MARGIN) {
       if (relCoords[1] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN / 2)
         this.highlightedSizeDirection = [1, -1]
@@ -413,14 +419,14 @@ export class VisualGraph {
         this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
       )
         this.highlightedSizeDirection = [1, 1]
+
+      if (e.buttons === 1) {
+        this.resize(this.highlightedSizeDirection, delta)
+
+        return
+      }
     } else {
       this.highlightedSizeDirection = [0, 0]
-    }
-
-    if (e.buttons === 1) {
-      this.resize(this.highlightedSizeDirection, delta)
-
-      return
     }
 
     if (e.buttons === 1 && !this.highlightedNode) this.isDragged = true
@@ -464,9 +470,9 @@ export class VisualGraph {
         if (this.inDisconnectMode)
           this.graph.removeEdge(this.connectNode.id, this.highlightedNode.id)
         else this.graph.addEdge(this.connectNode.id, this.highlightedNode.id)
-      }
 
-      this.disableConnectMode()
+        this.disableConnectMode()
+      }
     }
   }
 }

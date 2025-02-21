@@ -8,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core'
 import { Graph } from '../models/graph'
-import { VisualGraph, VisualNode } from '../models/visual-graph.model'
+import { HEADER_HEIGHT, VisualGraph, VisualNode } from '../models/visual-graph.model'
 import { ContextMenu } from '../models/context-menu.model'
 
 @Component({
@@ -84,10 +84,23 @@ export class CanvasComponent implements AfterViewInit {
       'graph',
       'create-node',
       'Create node',
-      (graphId: number) => {
-        this.visualGraphs.get(graphId)!.addNode(undefined)
+      ([graphId, [mouseX, mouseY]]) => {
+        const relCoords: [number, number] = [
+          Math.floor(
+            (mouseX -
+              (this.pan.x +
+                this.visualGraphs.get(graphId)!.rect.x * this.zoom)) /
+              this.zoom
+          ),
+          Math.floor(
+            (mouseY -
+              (this.pan.y +
+                this.visualGraphs.get(graphId)!.rect.y * this.zoom)) /
+              this.zoom
+          ) - HEADER_HEIGHT,
+        ]
 
-        this.visualGraphs.get(graphId)!.autoArrangeNodes()
+        this.visualGraphs.get(graphId)!.addNode(undefined, relCoords)
       }
     )
 
@@ -95,14 +108,14 @@ export class CanvasComponent implements AfterViewInit {
       'graph',
       'delete-graph',
       'Delete graph',
-      (graphId: number) => this.onDeleteGraph.emit(graphId)
+      ([graphId]) => this.onDeleteGraph.emit(graphId)
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-all-nodes',
       'Delete all nodes',
-      (graphId: number) => this.visualGraphs.get(graphId)!.removeAllNodes()
+      ([graphId]) => this.visualGraphs.get(graphId)!.removeAllNodes()
     )
 
     this.contextMenu.addOption(
@@ -285,7 +298,10 @@ export class CanvasComponent implements AfterViewInit {
       ])
       this.contextMenu.changeCollection('node')
     } else if (this.highlightedGraph) {
-      this.contextMenu.setData(this.highlightedGraph.graph.id)
+      this.contextMenu.setData([
+        this.highlightedGraph.graph.id,
+        [e.clientX, e.clientY],
+      ])
       this.contextMenu.changeCollection('graph')
     } else {
       this.contextMenu.setData([e.clientX, e.clientY])
