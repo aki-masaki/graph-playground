@@ -6,6 +6,12 @@ export const HEADER_HEIGHT = 50
 
 const SIZE_HANDLER_RADIUS = 10
 const SIZE_HANDLER_MARGIN = 18
+const SIZE_HANDLER_THRESHOLD = SIZE_HANDLER_MARGIN + SIZE_HANDLER_RADIUS * 2
+
+const SIZE_LIMITS = [
+  [150, 300],
+  [700, 700],
+]
 
 export class VisualNode {
   public id: number
@@ -22,7 +28,7 @@ export class VisualNode {
   public move(
     deltaX: number,
     deltaY: number,
-    limits: [[number, number], [number, number]],
+    limits: [[number, number], [number, number]]
   ) {
     this.x += deltaX
     this.y += deltaY
@@ -34,7 +40,7 @@ export class VisualNode {
   public draw(
     ctx: CanvasRenderingContext2D,
     offset: [number, number] = [0, 0],
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.save()
 
@@ -58,7 +64,7 @@ export class VisualNode {
     ctx.fillText(
       this.id.toString(),
       this.x + offset[0] - textWidth / 2,
-      this.y + offset[1] + textHeight / 2,
+      this.y + offset[1] + textHeight / 2
     )
 
     ctx.restore()
@@ -83,8 +89,6 @@ export class VisualGraph {
   public highlightedNode?: VisualNode
   private draggedNode?: VisualNode
 
-  private isDragged: boolean = false
-
   private inConnectMode: boolean = false
   private inDisconnectMode: boolean = false
   private connectNode?: VisualNode
@@ -94,10 +98,12 @@ export class VisualGraph {
 
   private highlightedSizeDirection: [number, number] = [0, 0]
 
+  private activeInteraction: 'move' | 'resize' | 'none' = 'none'
+
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = { x: 0, y: 0, w: 300, h: 150 },
+    rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
   ) {
     this.graph = graph
     this.nodes = nodes
@@ -156,14 +162,14 @@ export class VisualGraph {
   private drawContainer(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.fillStyle = '#3a332f'
     ctx.strokeStyle = isSelected
       ? '#56abd8'
       : isHighlighted
-        ? '#565656'
-        : '#3a332f'
+      ? '#565656'
+      : '#3a332f'
 
     ctx.lineWidth = 5
 
@@ -194,7 +200,7 @@ export class VisualGraph {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       SIZE_HANDLER_RADIUS,
       0,
-      Math.PI / 2,
+      Math.PI / 2
     )
     ctx.stroke()
 
@@ -212,7 +218,7 @@ export class VisualGraph {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       10,
       Math.PI / 2,
-      Math.PI,
+      Math.PI
     )
     ctx.stroke()
 
@@ -230,7 +236,7 @@ export class VisualGraph {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       Math.PI,
-      (3 * Math.PI) / 2,
+      (3 * Math.PI) / 2
     )
     ctx.stroke()
 
@@ -248,7 +254,7 @@ export class VisualGraph {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       (3 * Math.PI) / 2,
-      Math.PI * 2,
+      Math.PI * 2
     )
     ctx.stroke()
 
@@ -264,7 +270,7 @@ export class VisualGraph {
     ctx.fillText(
       this.graph.name,
       this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30,
+      this.rect.y + 30
     )
   }
 
@@ -273,7 +279,7 @@ export class VisualGraph {
     a: [number, number],
     b: [number, number],
     offset: [number, number],
-    useCenter: [boolean, boolean] = [false, false],
+    useCenter: [boolean, boolean] = [false, false]
   ) {
     ctx.beginPath()
 
@@ -311,8 +317,8 @@ export class VisualGraph {
       node.draw(
         ctx,
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        this.highlightedNode?.id === node.id,
-      ),
+        this.highlightedNode?.id === node.id
+      )
     )
 
     let drawn = new Set<string>()
@@ -334,7 +340,7 @@ export class VisualGraph {
           ctx,
           [node.x, node.y],
           [neighbour.x, neighbour.y],
-          [this.rect.x, this.rect.y + HEADER_HEIGHT],
+          [this.rect.x, this.rect.y + HEADER_HEIGHT]
         )
       })
     })
@@ -345,7 +351,7 @@ export class VisualGraph {
         [this.connectNode.x, this.connectNode.y],
         [this.mouseX, this.mouseY - HEADER_HEIGHT],
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        [false, true],
+        [false, true]
       )
     }
   }
@@ -362,7 +368,7 @@ export class VisualGraph {
   public draw(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false,
+    isHighlighted: boolean = false
   ) {
     ctx.save()
 
@@ -382,16 +388,26 @@ export class VisualGraph {
   }
 
   public resize(direction: [number, number], delta: [number, number]) {
-    if (direction[0] === 1) this.rect.w += delta[0]
-    else if (direction[0] === -1) {
-      this.rect.x += delta[0]
-      this.rect.w -= delta[0]
+    if (
+      (this.rect.w += delta[0]) > SIZE_LIMITS[0][0] &&
+      (this.rect.w += delta[0]) < SIZE_LIMITS[1][0]
+    ) {
+      if (direction[0] === 1) this.rect.w += delta[0]
+      else if (direction[0] === -1) {
+        this.rect.x += delta[0]
+        this.rect.w -= delta[0]
+      }
     }
 
-    if (direction[1] === 1) this.rect.h += delta[1]
-    else if (direction[1] === -1) {
-      this.rect.y += delta[1]
-      this.rect.h -= delta[1]
+    if (
+      (this.rect.h += delta[1]) > SIZE_LIMITS[0][1] &&
+      (this.rect.h += delta[1]) < SIZE_LIMITS[1][1]
+    ) {
+      if (direction[1] === 1) this.rect.h += delta[1]
+      else if (direction[1] === -1) {
+        this.rect.y += delta[1]
+        this.rect.h -= delta[1]
+      }
     }
 
     this.rect.x = Math.round(this.rect.x)
@@ -400,84 +416,76 @@ export class VisualGraph {
     this.rect.h = Math.round(this.rect.h)
   }
 
+  private getNodeLimits(): [[number, number], [number, number]] {
+    return [
+      [NODE_RADIUS, this.rect.w - NODE_RADIUS],
+      [HEADER_HEIGHT - NODE_RADIUS, this.rect.h - HEADER_HEIGHT - NODE_RADIUS],
+    ]
+  }
+
+  private performActiveInteraction(delta: [number, number]) {
+    if (this.activeInteraction === 'resize')
+      return this.resize(this.highlightedSizeDirection, delta)
+    else if (this.activeInteraction === 'move')
+      return this.move(delta[0], delta[1])
+    else if (this.draggedNode)
+      return this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
+  }
+
+  private isOverNode(
+    relCoords: [number, number],
+    nodeCoords: [number, number]
+  ) {
+    return (
+      relCoords[0] > nodeCoords[0] - NODE_RADIUS &&
+      relCoords[0] < nodeCoords[0] + NODE_RADIUS &&
+      relCoords[1] > nodeCoords[1] - NODE_RADIUS + HEADER_HEIGHT &&
+      relCoords[1] < nodeCoords[1] + NODE_RADIUS + HEADER_HEIGHT
+    )
+  }
+
   public onMouseMove(
     relCoords: [number, number],
     delta: [number, number],
-    e: MouseEvent,
+    e: MouseEvent
   ) {
     if (this.inConnectMode) {
       this.mouseX = relCoords[0]
       this.mouseY = relCoords[1]
     }
 
-    if (relCoords[0] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN * 2) {
-      if (relCoords[1] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN)
-        this.highlightedSizeDirection = [-1, -1]
-      else if (
-        relCoords[1] >
-        this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
-      )
-        this.highlightedSizeDirection = [-1, 1]
+    if (this.activeInteraction !== 'none')
+      return this.performActiveInteraction(delta)
+    else if (this.draggedNode)
+      return this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
 
-      if (e.buttons === 1) {
-        this.resize(this.highlightedSizeDirection, delta)
+    const xDirection =
+      relCoords[0] > 0 && relCoords[0] < SIZE_HANDLER_THRESHOLD
+        ? -1
+        : relCoords[0] > this.rect.w - SIZE_HANDLER_THRESHOLD &&
+          relCoords[0] < this.rect.w
+        ? 1
+        : 0
 
-        return
-      }
-    } else if (relCoords[0] > this.rect.w - SIZE_HANDLER_MARGIN) {
-      if (relCoords[1] < SIZE_HANDLER_RADIUS + SIZE_HANDLER_MARGIN / 2)
-        this.highlightedSizeDirection = [1, -1]
-      else if (
-        relCoords[1] >
-        this.rect.h - SIZE_HANDLER_RADIUS - SIZE_HANDLER_MARGIN
-      )
-        this.highlightedSizeDirection = [1, 1]
+    const yDirection =
+      relCoords[1] > 0 && relCoords[1] < SIZE_HANDLER_THRESHOLD
+        ? -1
+        : relCoords[1] > this.rect.h - SIZE_HANDLER_THRESHOLD &&
+          relCoords[1] < this.rect.h
+        ? 1
+        : 0
 
-      if (e.buttons === 1) {
-        this.resize(this.highlightedSizeDirection, delta)
-
-        return
-      }
-    } else {
-      this.highlightedSizeDirection = [0, 0]
-    }
-
-    if (e.buttons === 1 && !this.highlightedNode) this.isDragged = true
-
-    if (this.isDragged) this.move(delta[0], delta[1])
-
-    if (this.draggedNode && !this.isDragged)
-      this.draggedNode.move(delta[0], delta[1], [
-        [NODE_RADIUS, this.rect.w - NODE_RADIUS],
-        [
-          HEADER_HEIGHT - NODE_RADIUS,
-          this.rect.h - HEADER_HEIGHT - NODE_RADIUS,
-        ],
-      ])
+    this.highlightedSizeDirection = [xDirection, yDirection]
 
     this.highlightedNode = undefined
 
-    if (e.buttons === 0) {
-      this.draggedNode = undefined
-      this.isDragged = false
-    }
-
     this.nodes.forEach((node) => {
-      if (
-        relCoords[0] > node.x - NODE_RADIUS &&
-        relCoords[0] < node.x + NODE_RADIUS &&
-        relCoords[1] > node.y - NODE_RADIUS + HEADER_HEIGHT &&
-        relCoords[1] < node.y + NODE_RADIUS + HEADER_HEIGHT
-      ) {
+      if (!this.highlightedNode && this.isOverNode(relCoords, [node.x, node.y]))
         this.highlightedNode = node
-
-        if (e.buttons === 1 && !this.draggedNode)
-          this.draggedNode = this.highlightedNode
-      }
     })
   }
 
-  public onMouseDown() {
+  public onMouseDown(e: MouseEvent) {
     if (this.inConnectMode && this.connectNode) {
       if (this.highlightedNode) {
         if (this.inDisconnectMode)
@@ -487,6 +495,16 @@ export class VisualGraph {
         this.disableConnectMode()
       }
     }
+
+    if (!this.highlightedSizeDirection.includes(0))
+      this.activeInteraction = 'resize'
+    else if (!this.highlightedNode) this.activeInteraction = 'move'
+    else this.draggedNode = this.highlightedNode
+  }
+
+  public onMouseUp() {
+    this.activeInteraction = 'none'
+    this.draggedNode = undefined
   }
 
   public serialize() {
