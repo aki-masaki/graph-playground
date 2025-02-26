@@ -1,3 +1,8 @@
+export enum GraphType {
+  Undirected,
+  Directed,
+}
+
 export class Graph {
   public id: number
   public name: string
@@ -5,11 +10,14 @@ export class Graph {
   public nodes: Set<number>
   public edges: Map<number, Set<number>>
 
+  public type: GraphType = GraphType.Directed
+
   public constructor(
     id: number,
     name: string = '',
     nodes: Set<number> = new Set(),
     edges: Map<number, Set<number>> = new Map(),
+    type: GraphType = GraphType.Undirected
   ) {
     this.id = id
     this.name = name == '' ? `Graph ${id}` : name
@@ -28,22 +36,28 @@ export class Graph {
     this.addNode(b)
 
     this.edges.get(a)!.add(b)
-    this.edges.get(b)!.add(a)
+
+    if (this.type === GraphType.Undirected) this.edges.get(b)!.add(a)
   }
 
   public removeNode(nodeId: number) {
     this.nodes.delete(nodeId)
     this.edges.delete(nodeId)
 
-    this.edges.forEach((edge) => edge.delete(nodeId))
+    if (this.type === GraphType.Undirected)
+      this.edges.forEach((edge) => edge.delete(nodeId))
   }
 
   public removeEdge(a: number, b: number) {
     this.edges.get(a)!.delete(b)
-    this.edges.get(b)!.delete(a)
 
     if (this.edges.get(a)!.size === 0) this.edges.delete(a)
-    if (this.edges.get(b)!.size === 0) this.edges.delete(b)
+
+    if (this.type === GraphType.Undirected) {
+      this.edges.get(b)!.delete(a)
+
+      if (this.edges.get(b)?.size === 0) this.edges.delete(b)
+    }
   }
 
   public serialize() {
@@ -55,6 +69,7 @@ export class Graph {
       ]),
       id: this.id,
       name: this.name,
+      type: this.type,
     }
   }
 }

@@ -1,5 +1,5 @@
 import { Rect } from '../interfaces/rect'
-import { Graph } from './graph'
+import { Graph, GraphType } from './graph'
 
 const NODE_RADIUS = 25
 export const HEADER_HEIGHT = 50
@@ -103,7 +103,7 @@ export class VisualGraph {
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = { x: 0, y: 0, w: 300, h: 150 }
+    rect: Rect = { x: 0, y: 0, w: 300, h: 300 }
   ) {
     this.graph = graph
     this.nodes = nodes
@@ -310,6 +310,22 @@ export class VisualGraph {
     else ctx.lineTo(bx, by)
 
     ctx.stroke()
+
+    const angle = Math.atan2(uy, ux)
+
+    ctx.save()
+
+    ctx.translate(ax, ay)
+    ctx.rotate(angle)
+    ctx.translate(-ax, -ay)
+
+    ctx.font = 'bold 20px Arial'
+    ctx.fillStyle = '#ef3b3b'
+
+    const arrowWidth = ctx.measureText('🠂').width
+    ctx.fillText('🠂', ax + len / 2 - arrowWidth * 2, ay)
+
+    ctx.restore()
   }
 
   private drawGraph(ctx: CanvasRenderingContext2D) {
@@ -389,8 +405,8 @@ export class VisualGraph {
 
   public resize(direction: [number, number], delta: [number, number]) {
     if (
-      (this.rect.w += delta[0]) > SIZE_LIMITS[0][0] &&
-      (this.rect.w += delta[0]) < SIZE_LIMITS[1][0]
+      this.rect.w + delta[0] >= SIZE_LIMITS[0][0] &&
+      this.rect.w + delta[0] <= SIZE_LIMITS[1][0]
     ) {
       if (direction[0] === 1) this.rect.w += delta[0]
       else if (direction[0] === -1) {
@@ -400,8 +416,8 @@ export class VisualGraph {
     }
 
     if (
-      (this.rect.h += delta[1]) > SIZE_LIMITS[0][1] &&
-      (this.rect.h += delta[1]) < SIZE_LIMITS[1][1]
+      (this.rect.h + delta[1]) >= SIZE_LIMITS[0][1] &&
+      (this.rect.h + delta[1]) <= SIZE_LIMITS[1][1]
     ) {
       if (direction[1] === 1) this.rect.h += delta[1]
       else if (direction[1] === -1) {
