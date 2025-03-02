@@ -33,6 +33,7 @@ yarn-error.log
 testem.log
 /typings
 bun.lockb
+bun.lock
 
 # System files
 .DS_Store

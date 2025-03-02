@@ -5,6 +5,7 @@ import { VisualGraph, VisualNode } from './models/visual-graph.model'
 import { CanvasComponent } from './canvas/canvas.component'
 import { SidebarComponent } from './sidebar/sidebar.component'
 import { Rect } from './interfaces/rect'
+import {VisualModal} from './models/visual-modal.model'
 
 export type FileData = {
   visualGraphs: {
@@ -44,7 +45,7 @@ export class AppComponent implements AfterViewInit {
   public graphs: Map<number, Graph> = new Map()
   public visualGraphs: Map<number, VisualGraph> = new Map()
 
-  public selectedGraph?: VisualGraph
+  public selectedModal?: VisualGraph
   public selectedNode?: VisualNode
 
   @ViewChild(CanvasComponent)
@@ -72,15 +73,15 @@ export class AppComponent implements AfterViewInit {
     this.graphs.set(id, graph)
     this.visualGraphs.set(id, visualGraph)
 
-    this.selectedGraph = visualGraph
+    this.selectedModal = visualGraph
   }
 
   public deleteGraph(id: number) {
     this.graphs.delete(id)
     this.visualGraphs.delete(id)
 
-    if (this.selectedGraph?.graph.id === id)
-      this.selectedGraph =
+    if (this.selectedModal?.graph.id === id)
+      this.selectedModal =
         this.visualGraphs.size > 0 ? this.visualGraphs.get(id - 1) : undefined
   }
 
@@ -91,7 +92,7 @@ export class AppComponent implements AfterViewInit {
       ),
       graphs: Array.from(this.graphs).map((value) => value[1].serialize()),
       canvas: this.canvas.serialize(),
-      selectedGraph: this.selectedGraph?.serialize(),
+      selectedGraph: this.selectedModal?.serialize(),
     })
   }
 
@@ -163,7 +164,7 @@ export class AppComponent implements AfterViewInit {
     this.visualGraphs = visualGraphs
 
     if (data.selectedGraph)
-      this.selectedGraph = new VisualGraph(
+      this.selectedModal = new VisualGraph(
         graphs.get(data.selectedGraph.id)!,
         new Map(
           Array.from(data.selectedGraph.nodes).map((node) => [
@@ -180,6 +181,6 @@ export class AppComponent implements AfterViewInit {
     this.visualGraphs = new Map()
 
     this.selectedNode = undefined
-    this.selectedGraph = undefined
+    this.selectedModal = undefined
   }
 }

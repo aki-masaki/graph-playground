@@ -1,17 +1,10 @@
-import { Rect } from '../interfaces/rect'
-import { Graph, GraphType } from './graph'
+import {Rect} from '../interfaces/rect'
+import {Graph, GraphType} from './graph'
+import {FONT, SIZE_HANDLER_THRESHOLD, VisualModal} from './visual-modal.model'
 
 const NODE_RADIUS = 25
 export const HEADER_HEIGHT = 50
 
-const SIZE_HANDLER_RADIUS = 10
-const SIZE_HANDLER_MARGIN = 18
-const SIZE_HANDLER_THRESHOLD = SIZE_HANDLER_MARGIN + SIZE_HANDLER_RADIUS * 2
-
-const SIZE_LIMITS = [
-  [150, 300],
-  [700, 700],
-]
 
 export class VisualNode {
   public id: number
@@ -59,7 +52,7 @@ export class VisualNode {
     const textHeight =
       textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent
 
-    ctx.font = 'bold 20px Arial'
+    ctx.font = FONT;
     ctx.fillStyle = 'white'
     ctx.fillText(
       this.id.toString(),
@@ -79,12 +72,9 @@ export class VisualNode {
   }
 }
 
-export class VisualGraph {
+export class VisualGraph extends VisualModal {
   public nodes: Map<number, VisualNode>
-
   public graph: Graph
-
-  public rect!: Rect
 
   public highlightedNode?: VisualNode
   private draggedNode?: VisualNode
@@ -96,18 +86,15 @@ export class VisualGraph {
   private mouseX: number = 0
   private mouseY: number = 0
 
-  private highlightedSizeDirection: [number, number] = [0, 0]
-
-  private activeInteraction: 'move' | 'resize' | 'none' = 'none'
-
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = { x: 0, y: 0, w: 300, h: 300 }
+    rect: Rect = {x: 0, y: 0, w: 300, h: 300}
   ) {
+    super(rect)
+
     this.graph = graph
     this.nodes = nodes
-    this.rect = rect
   }
 
   public static fromGraph(graph: Graph): VisualGraph {
@@ -159,121 +146,6 @@ export class VisualGraph {
     this.connectNode = undefined
   }
 
-  private drawContainer(
-    ctx: CanvasRenderingContext2D,
-    isSelected: boolean = false,
-    isHighlighted: boolean = false
-  ) {
-    ctx.fillStyle = '#3a332f'
-    ctx.strokeStyle = isSelected
-      ? '#56abd8'
-      : isHighlighted
-      ? '#565656'
-      : '#3a332f'
-
-    ctx.lineWidth = 5
-
-    ctx.beginPath()
-
-    ctx.roundRect(this.rect.x, this.rect.y, this.rect.w, this.rect.h, 20)
-
-    ctx.stroke()
-    ctx.fill()
-
-    ctx.lineWidth = 3
-
-    this.drawSizeHandlers(ctx)
-  }
-
-  private drawSizeHandlers(ctx: CanvasRenderingContext2D) {
-    ctx.strokeStyle = '#776f76'
-
-    if (
-      this.highlightedSizeDirection[0] === 1 &&
-      this.highlightedSizeDirection[1] === 1
-    )
-      ctx.strokeStyle = 'white'
-
-    ctx.beginPath()
-    ctx.arc(
-      this.rect.x + this.rect.w - SIZE_HANDLER_MARGIN,
-      this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
-      SIZE_HANDLER_RADIUS,
-      0,
-      Math.PI / 2
-    )
-    ctx.stroke()
-
-    ctx.strokeStyle = '#776f76'
-
-    if (
-      this.highlightedSizeDirection[0] === -1 &&
-      this.highlightedSizeDirection[1] === 1
-    )
-      ctx.strokeStyle = 'white'
-
-    ctx.beginPath()
-    ctx.arc(
-      this.rect.x + SIZE_HANDLER_MARGIN,
-      this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
-      10,
-      Math.PI / 2,
-      Math.PI
-    )
-    ctx.stroke()
-
-    ctx.strokeStyle = '#776f76'
-
-    if (
-      this.highlightedSizeDirection[0] === -1 &&
-      this.highlightedSizeDirection[1] === -1
-    )
-      ctx.strokeStyle = 'white'
-
-    ctx.beginPath()
-    ctx.arc(
-      this.rect.x + SIZE_HANDLER_MARGIN,
-      this.rect.y + SIZE_HANDLER_MARGIN,
-      10,
-      Math.PI,
-      (3 * Math.PI) / 2
-    )
-    ctx.stroke()
-
-    ctx.strokeStyle = '#776f76'
-
-    if (
-      this.highlightedSizeDirection[0] === 1 &&
-      this.highlightedSizeDirection[1] === -1
-    )
-      ctx.strokeStyle = 'white'
-
-    ctx.beginPath()
-    ctx.arc(
-      this.rect.x + this.rect.w - SIZE_HANDLER_MARGIN,
-      this.rect.y + SIZE_HANDLER_MARGIN,
-      10,
-      (3 * Math.PI) / 2,
-      Math.PI * 2
-    )
-    ctx.stroke()
-
-    ctx.strokeStyle = '#776f76'
-  }
-
-  private drawTitle(ctx: CanvasRenderingContext2D) {
-    const textWidth = ctx.measureText(this.graph.name).width
-
-    ctx.fillStyle = 'white'
-    ctx.font = 'bold 20px Arial'
-
-    ctx.fillText(
-      this.graph.name,
-      this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30
-    )
-  }
-
   private drawEdge(
     ctx: CanvasRenderingContext2D,
     a: [number, number],
@@ -319,8 +191,8 @@ export class VisualGraph {
     ctx.rotate(angle)
     ctx.translate(-ax, -ay)
 
-    ctx.font = 'bold 20px Arial'
-    ctx.fillStyle = '#ef3b3b'
+    ctx.font = FONT;
+    ctx.fillStyle = 'white'
 
     const arrowWidth = ctx.measureText('🠂').width
     ctx.fillText('🠂', ax + len / 2 - arrowWidth * 2, ay)
@@ -381,55 +253,14 @@ export class VisualGraph {
     })
   }
 
-  public draw(
+  public override draw(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
     isHighlighted: boolean = false
   ) {
-    ctx.save()
+    super.draw(ctx, isSelected, isHighlighted, this.graph.name)
 
-    this.drawContainer(ctx, isSelected, isHighlighted)
-    this.drawTitle(ctx)
     this.drawGraph(ctx)
-
-    ctx.restore()
-  }
-
-  public move(deltaX: number, deltaY: number) {
-    this.rect.x += deltaX
-    this.rect.y += deltaY
-
-    this.rect.x = Math.floor(this.rect.x)
-    this.rect.y = Math.floor(this.rect.y)
-  }
-
-  public resize(direction: [number, number], delta: [number, number]) {
-    if (
-      this.rect.w + delta[0] >= SIZE_LIMITS[0][0] &&
-      this.rect.w + delta[0] <= SIZE_LIMITS[1][0]
-    ) {
-      if (direction[0] === 1) this.rect.w += delta[0]
-      else if (direction[0] === -1) {
-        this.rect.x += delta[0]
-        this.rect.w -= delta[0]
-      }
-    }
-
-    if (
-      (this.rect.h + delta[1]) >= SIZE_LIMITS[0][1] &&
-      (this.rect.h + delta[1]) <= SIZE_LIMITS[1][1]
-    ) {
-      if (direction[1] === 1) this.rect.h += delta[1]
-      else if (direction[1] === -1) {
-        this.rect.y += delta[1]
-        this.rect.h -= delta[1]
-      }
-    }
-
-    this.rect.x = Math.round(this.rect.x)
-    this.rect.y = Math.round(this.rect.y)
-    this.rect.w = Math.round(this.rect.w)
-    this.rect.h = Math.round(this.rect.h)
   }
 
   private getNodeLimits(): [[number, number], [number, number]] {
@@ -437,15 +268,6 @@ export class VisualGraph {
       [NODE_RADIUS, this.rect.w - NODE_RADIUS],
       [HEADER_HEIGHT - NODE_RADIUS, this.rect.h - HEADER_HEIGHT - NODE_RADIUS],
     ]
-  }
-
-  private performActiveInteraction(delta: [number, number]) {
-    if (this.activeInteraction === 'resize')
-      return this.resize(this.highlightedSizeDirection, delta)
-    else if (this.activeInteraction === 'move')
-      return this.move(delta[0], delta[1])
-    else if (this.draggedNode)
-      return this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
   }
 
   private isOverNode(
@@ -460,48 +282,9 @@ export class VisualGraph {
     )
   }
 
-  public onMouseMove(
-    relCoords: [number, number],
-    delta: [number, number],
-    e: MouseEvent
-  ) {
-    if (this.inConnectMode) {
-      this.mouseX = relCoords[0]
-      this.mouseY = relCoords[1]
-    }
+  public override onMouseDown() {
+    super.onMouseDown(!!this.highlightedNode)
 
-    if (this.activeInteraction !== 'none')
-      return this.performActiveInteraction(delta)
-    else if (this.draggedNode)
-      return this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
-
-    const xDirection =
-      relCoords[0] > 0 && relCoords[0] < SIZE_HANDLER_THRESHOLD
-        ? -1
-        : relCoords[0] > this.rect.w - SIZE_HANDLER_THRESHOLD &&
-          relCoords[0] < this.rect.w
-        ? 1
-        : 0
-
-    const yDirection =
-      relCoords[1] > 0 && relCoords[1] < SIZE_HANDLER_THRESHOLD
-        ? -1
-        : relCoords[1] > this.rect.h - SIZE_HANDLER_THRESHOLD &&
-          relCoords[1] < this.rect.h
-        ? 1
-        : 0
-
-    this.highlightedSizeDirection = [xDirection, yDirection]
-
-    this.highlightedNode = undefined
-
-    this.nodes.forEach((node) => {
-      if (!this.highlightedNode && this.isOverNode(relCoords, [node.x, node.y]))
-        this.highlightedNode = node
-    })
-  }
-
-  public onMouseDown(e: MouseEvent) {
     if (this.inConnectMode && this.connectNode) {
       if (this.highlightedNode) {
         if (this.inDisconnectMode)
@@ -512,14 +295,13 @@ export class VisualGraph {
       }
     }
 
-    if (!this.highlightedSizeDirection.includes(0))
-      this.activeInteraction = 'resize'
-    else if (!this.highlightedNode) this.activeInteraction = 'move'
-    else this.draggedNode = this.highlightedNode
+    if (this.highlightedNode)
+      this.draggedNode = this.highlightedNode
   }
 
-  public onMouseUp() {
-    this.activeInteraction = 'none'
+  public override onMouseUp() {
+    super.onMouseUp()
+
     this.draggedNode = undefined
   }
 
@@ -529,5 +311,33 @@ export class VisualGraph {
       rect: this.rect,
       id: this.graph.id,
     }
+  }
+
+  public override onMouseMove(relCoords: [number, number], delta: [number, number]) {
+    super.onMouseMove(relCoords, delta)
+
+    if (this.inConnectMode) {
+      this.mouseX = relCoords[0]
+      this.mouseY = relCoords[1]
+    }
+
+    this.highlightedNode = undefined
+
+    this.nodes.forEach((node) => {
+      if (!this.highlightedNode && this.isOverNode(relCoords, [node.x, node.y]))
+        this.highlightedNode = node
+    })
+
+    if (this.draggedNode)
+      this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
+  }
+
+  public override performActiveInteraction(delta: [number, number]): boolean {
+    if (super.performActiveInteraction(delta)) return false
+
+    if (this.draggedNode)
+      this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
+
+    return false;
   }
 }

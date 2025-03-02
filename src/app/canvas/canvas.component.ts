@@ -256,8 +256,7 @@ export class CanvasComponent implements AfterViewInit {
           (e.clientY - (this.pan.y + this.interactingGraph.rect.y * this.zoom)) / this.zoom
         ),
       ],
-      [e.movementX / this.zoom, e.movementY / this.zoom],
-      e
+      [e.movementX / this.zoom, e.movementY / this.zoom]
     )
 
     this.visualGraphs.forEach((graph) => {
@@ -343,7 +342,7 @@ export class CanvasComponent implements AfterViewInit {
       this.contextMenu.onMouseDown()
     else this.contextMenu.hide()
 
-    this.highlightedGraph?.onMouseDown(e)
+    this.highlightedGraph?.onMouseDown()
     this.interactingGraph = this.highlightedGraph
   }
 
