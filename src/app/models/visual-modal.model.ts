@@ -1,8 +1,9 @@
-import {Rect} from "../interfaces/rect";
+import { Rect } from '../interfaces/rect'
 
 const SIZE_HANDLER_RADIUS = 10
 const SIZE_HANDLER_MARGIN = 18
-export const SIZE_HANDLER_THRESHOLD = SIZE_HANDLER_MARGIN + SIZE_HANDLER_RADIUS * 2
+export const SIZE_HANDLER_THRESHOLD =
+  SIZE_HANDLER_MARGIN + SIZE_HANDLER_RADIUS * 2
 
 export const FONT = 'bold 20px Lato'
 
@@ -12,9 +13,10 @@ const SIZE_LIMITS = [
 ]
 
 export class VisualModal {
-  public rect!: Rect;
+  public id!: number
+  public rect!: Rect
 
-  public title!: string;
+  public title!: string
 
   private highlightedSizeDirection: [number, number] = [0, 0]
 
@@ -23,21 +25,25 @@ export class VisualModal {
   protected performActiveInteraction(delta: [number, number]): boolean {
     if (this.activeInteraction === 'resize')
       this.resize(this.highlightedSizeDirection, delta)
-    else if (this.activeInteraction === 'move')
-      this.move(delta[0], delta[1])
+    else if (this.activeInteraction === 'move') this.move(delta[0], delta[1])
 
     return this.activeInteraction !== 'none'
   }
 
-  public constructor(rect: Rect = {x: 0, y: 0, w: 300, h: 300}, title: string = 'Modal') {
-    this.rect = rect;
-    this.title = title;
+  public constructor(
+    rect: Rect = { x: 0, y: 0, w: 300, h: 350 },
+    title: string = 'Modal',
+    id: number,
+  ) {
+    this.id = id
+    this.rect = rect
+    this.title = title
   }
 
   private drawContainer(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     ctx.fillStyle = '#3a332f'
     ctx.strokeStyle = isSelected
@@ -75,7 +81,7 @@ export class VisualModal {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       SIZE_HANDLER_RADIUS,
       0,
-      Math.PI / 2
+      Math.PI / 2,
     )
     ctx.stroke()
 
@@ -93,7 +99,7 @@ export class VisualModal {
       this.rect.y + this.rect.h - SIZE_HANDLER_MARGIN,
       10,
       Math.PI / 2,
-      Math.PI
+      Math.PI,
     )
     ctx.stroke()
 
@@ -111,7 +117,7 @@ export class VisualModal {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       Math.PI,
-      (3 * Math.PI) / 2
+      (3 * Math.PI) / 2,
     )
     ctx.stroke()
 
@@ -129,7 +135,7 @@ export class VisualModal {
       this.rect.y + SIZE_HANDLER_MARGIN,
       10,
       (3 * Math.PI) / 2,
-      Math.PI * 2
+      Math.PI * 2,
     )
     ctx.stroke()
 
@@ -137,21 +143,26 @@ export class VisualModal {
   }
 
   private drawTitle(ctx: CanvasRenderingContext2D, title: string | undefined) {
-    if (title) this.title = title;
+    if (title) this.title = title
 
     const textWidth = ctx.measureText(this.title).width
 
     ctx.fillStyle = 'white'
-    ctx.font = FONT;
+    ctx.font = FONT
 
     ctx.fillText(
       this.title,
       this.rect.x + this.rect.w / 2 - textWidth,
-      this.rect.y + 30
+      this.rect.y + 30,
     )
   }
 
-  protected draw(ctx: CanvasRenderingContext2D, isSelected: boolean = false, isHighlighted: boolean = false, title: string | undefined) {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    isSelected: boolean = false,
+    isHighlighted: boolean = false,
+    title: string | undefined,
+  ) {
     ctx.save()
 
     this.drawContainer(ctx, isSelected, isHighlighted)
@@ -160,12 +171,8 @@ export class VisualModal {
     ctx.restore()
   }
 
-  public onMouseMove(
-    relCoords: [number, number],
-    delta: [number, number]
-  ) {
-    if (this.activeInteraction !== 'none')
-    {
+  public onMouseMove(relCoords: [number, number], delta: [number, number]) {
+    if (this.activeInteraction !== 'none') {
       this.performActiveInteraction(delta)
 
       return
@@ -175,7 +182,7 @@ export class VisualModal {
       relCoords[0] > 0 && relCoords[0] < SIZE_HANDLER_THRESHOLD
         ? -1
         : relCoords[0] > this.rect.w - SIZE_HANDLER_THRESHOLD &&
-          relCoords[0] < this.rect.w
+            relCoords[0] < this.rect.w
           ? 1
           : 0
 
@@ -183,7 +190,7 @@ export class VisualModal {
       relCoords[1] > 0 && relCoords[1] < SIZE_HANDLER_THRESHOLD
         ? -1
         : relCoords[1] > this.rect.h - SIZE_HANDLER_THRESHOLD &&
-          relCoords[1] < this.rect.h
+            relCoords[1] < this.rect.h
           ? 1
           : 0
 
@@ -223,8 +230,8 @@ export class VisualModal {
     }
 
     if (
-      (this.rect.h + delta[1]) >= SIZE_LIMITS[0][1] &&
-      (this.rect.h + delta[1]) <= SIZE_LIMITS[1][1]
+      this.rect.h + delta[1] >= SIZE_LIMITS[0][1] &&
+      this.rect.h + delta[1] <= SIZE_LIMITS[1][1]
     ) {
       if (direction[1] === 1) this.rect.h += delta[1]
       else if (direction[1] === -1) {

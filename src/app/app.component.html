@@ -13,10 +13,13 @@
   <app-canvas
     [graphs]="graphs"
     [visualGraphs]="visualGraphs"
+    [infoModals]="infoModals"
     [selectedGraph]="selectedGraph"
-    (onSelect)="selectedGraph = visualGraphs.get($event)"
+    [selectedInfoModal]="selectedInfoModal"
+    (onSelect)="onSelect($event)"
     (onCreateGraph)="createGraph($event)"
     (onDeleteGraph)="deleteGraph($event)"
+    (onCreateInfoModal)="createInfoModal($event)"
   ></app-canvas>
 </div>
 

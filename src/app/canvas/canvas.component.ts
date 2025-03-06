@@ -14,6 +14,8 @@ import {
   VisualNode,
 } from '../models/visual-graph.model'
 import { ContextMenu } from '../models/context-menu.model'
+import { InfoModal } from '../models/info-modal.model'
+import { VisualModal } from '../models/visual-modal.model'
 
 @Component({
   selector: 'app-canvas',
@@ -34,24 +36,37 @@ export class CanvasComponent implements AfterViewInit {
   public visualGraphs!: Map<number, VisualGraph>
 
   @Input()
+  public infoModals!: Map<number, InfoModal>
+
+  @Input()
   public selectedGraph?: VisualGraph
+  @Input()
+  public selectedInfoModal?: InfoModal
 
   @Input()
   public selectedNode?: VisualNode
 
   public highlightedGraph?: VisualGraph
+  public highlightedInfoModal?: InfoModal
 
-  public interactingGraph?: VisualGraph
+  public interactingModal?: VisualModal
 
   @Output()
-  public onSelect: EventEmitter<number> = new EventEmitter<number>()
+  public onSelect: EventEmitter<['graph' | 'info' | 'none', number]> =
+    new EventEmitter<['graph' | 'info' | 'none', number]>()
 
   @Output()
   public onCreateGraph: EventEmitter<[number, number]> = new EventEmitter<
     [number, number]
   >()
+
   @Output()
-  public onDeleteGraph: EventEmitter<number> = new EventEmitter<number>()
+  public onDeleteGraph: EventEmitter<number> = new EventEmitter()
+
+  @Output()
+  public onCreateInfoModal: EventEmitter<[number, number]> = new EventEmitter<
+    [number, number]
+  >()
 
   public pan: { x: number; y: number } = { x: 50, y: 0 }
   public zoom: number = 2
@@ -60,7 +75,7 @@ export class CanvasComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.ctx = this.canvas.nativeElement.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
 
     this.setup()
@@ -80,7 +95,18 @@ export class CanvasComponent implements AfterViewInit {
         this.onCreateGraph.emit([
           (mouseX - this.pan.x) / this.zoom,
           (mouseY - this.pan.y) / this.zoom,
-        ])
+        ]),
+    )
+
+    this.contextMenu.addOption(
+      'global',
+      'create-info-modal',
+      'Create info modal',
+      ([mouseX, mouseY]) =>
+        this.onCreateInfoModal.emit([
+          (mouseX - this.pan.x) / this.zoom,
+          (mouseY - this.pan.y) / this.zoom,
+        ]),
     )
 
     this.contextMenu.addOption(
@@ -93,39 +119,39 @@ export class CanvasComponent implements AfterViewInit {
             (mouseX -
               (this.pan.x +
                 this.visualGraphs.get(graphId)!.rect.x * this.zoom)) /
-              this.zoom
+              this.zoom,
           ),
           Math.floor(
             (mouseY -
               (this.pan.y +
                 this.visualGraphs.get(graphId)!.rect.y * this.zoom)) /
-              this.zoom
+              this.zoom,
           ) - HEADER_HEIGHT,
         ]
 
         this.visualGraphs.get(graphId)!.addNode(undefined, relCoords)
-      }
+      },
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-graph',
       'Delete graph',
-      ([graphId]) => this.onDeleteGraph.emit(graphId)
+      ([graphId]) => this.onDeleteGraph.emit(graphId),
     )
 
     this.contextMenu.addOption(
       'graph',
       'delete-all-nodes',
       'Delete all nodes',
-      ([graphId]) => this.visualGraphs.get(graphId)!.removeAllNodes()
+      ([graphId]) => this.visualGraphs.get(graphId)!.removeAllNodes(),
     )
 
     this.contextMenu.addOption(
       'node',
       'delete-node',
       'Delete node',
-      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId)
+      ([graphId, nodeId]) => this.visualGraphs.get(graphId)!.removeNode(nodeId),
     )
 
     this.contextMenu.addOption(
@@ -133,7 +159,7 @@ export class CanvasComponent implements AfterViewInit {
       'connect',
       'Connect',
       ([graphId, nodeId]) =>
-        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId)
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId),
     )
 
     this.contextMenu.addOption(
@@ -141,7 +167,7 @@ export class CanvasComponent implements AfterViewInit {
       'disconnect',
       'Disconnect',
       ([graphId, nodeId]) =>
-        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true)
+        this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true),
     )
   }
 
@@ -162,7 +188,7 @@ export class CanvasComponent implements AfterViewInit {
           j * dotDistance + (this.pan.y % dotDistance),
           5,
           0,
-          Math.PI * 2
+          Math.PI * 2,
         )
 
         ctx.fill()
@@ -184,7 +210,7 @@ export class CanvasComponent implements AfterViewInit {
       0,
       0,
       this.canvas.nativeElement.width,
-      this.canvas.nativeElement.height
+      this.canvas.nativeElement.height,
     )
 
     this.drawBackground(this.ctx)
@@ -192,12 +218,22 @@ export class CanvasComponent implements AfterViewInit {
 
     this.ctx.translate(this.pan.x, this.pan.y)
     this.ctx.scale(this.zoom, this.zoom)
+
     this.visualGraphs.forEach((graph) =>
       graph.draw(
-        this.ctx!!,
+        this.ctx!,
         this.selectedGraph?.graph.id === graph.graph.id,
-        this.highlightedGraph?.graph.id === graph.graph.id
-      )
+        this.highlightedGraph?.graph.id === graph.graph.id,
+      ),
+    )
+
+    this.infoModals.forEach((modal) =>
+      modal.draw(
+        this.ctx!,
+        this.selectedInfoModal?.id === modal.id,
+        this.highlightedInfoModal?.id === modal.id,
+        'Info',
+      ),
     )
 
     if (this.contextMenu?.isShown) this.contextMenu.draw(this.ctx)
@@ -224,39 +260,44 @@ export class CanvasComponent implements AfterViewInit {
         e.clientX,
         this.contextMenu.rect.x,
         this.contextMenu.rect.x + this.contextMenu.rect.w,
-        this.pan.x
+        this.pan.x,
       ) &&
       this.isInBounds(
         e.clientY,
         this.contextMenu.rect.y,
         this.contextMenu.rect.y + this.contextMenu.rect.h,
-        this.pan.y
+        this.pan.y,
       )
     )
       this.contextMenu.onMouseMove([
         Math.floor(
           (e.clientX - (this.pan.x + this.contextMenu.rect.x * this.zoom)) /
-            this.zoom
+            this.zoom,
         ),
         Math.floor(
           (e.clientY - (this.pan.y + this.contextMenu.rect.y * this.zoom)) /
-            this.zoom
+            this.zoom,
         ),
       ])
     else this.contextMenu.highlightedOption = undefined
 
     this.highlightedGraph = undefined
+    this.highlightedInfoModal = undefined
 
-    this.interactingGraph?.onMouseMove(
+    this.interactingModal?.onMouseMove(
       [
         Math.floor(
-          (e.clientX - (this.pan.x + this.interactingGraph.rect.x * this.zoom)) / this.zoom
+          (e.clientX -
+            (this.pan.x + this.interactingModal.rect.x * this.zoom)) /
+            this.zoom,
         ),
         Math.floor(
-          (e.clientY - (this.pan.y + this.interactingGraph.rect.y * this.zoom)) / this.zoom
+          (e.clientY -
+            (this.pan.y + this.interactingModal.rect.y * this.zoom)) /
+            this.zoom,
         ),
       ],
-      [e.movementX / this.zoom, e.movementY / this.zoom]
+      [e.movementX / this.zoom, e.movementY / this.zoom],
     )
 
     this.visualGraphs.forEach((graph) => {
@@ -265,16 +306,35 @@ export class CanvasComponent implements AfterViewInit {
           e.clientX,
           graph.rect.x,
           graph.rect.x + graph.rect.w,
-          this.pan.x
+          this.pan.x,
         ) &&
         this.isInBounds(
           e.clientY,
           graph.rect.y,
           graph.rect.y + graph.rect.h,
-          this.pan.y
+          this.pan.y,
         )
       ) {
         this.highlightedGraph = graph
+      }
+    })
+
+    this.infoModals.forEach((modal) => {
+      if (
+        this.isInBounds(
+          e.clientX,
+          modal.rect.x,
+          modal.rect.x + modal.rect.w,
+          this.pan.x,
+        ) &&
+        this.isInBounds(
+          e.clientY,
+          modal.rect.y,
+          modal.rect.y + modal.rect.h,
+          this.pan.y,
+        )
+      ) {
+        this.highlightedInfoModal = modal
       }
     })
   }
@@ -287,13 +347,13 @@ export class CanvasComponent implements AfterViewInit {
   }
 
   public onDoubleClick() {
-    if (!this.highlightedGraph) {
-      this.onSelect.emit(-1)
+    let modalType: 'graph' | 'info' | 'none' = this.highlightedGraph
+      ? 'graph'
+      : 'info'
+    let modal = this.highlightedGraph ?? this.highlightedInfoModal
 
-      return
-    }
-
-    this.onSelect.emit(this.highlightedGraph.graph.id)
+    if (modal) this.onSelect.emit([modalType, modal.id])
+    else this.onSelect.emit(['none', -1])
   }
 
   public onContextMenu(e: MouseEvent) {
@@ -330,26 +390,28 @@ export class CanvasComponent implements AfterViewInit {
         e.clientX,
         this.contextMenu.rect.x,
         this.contextMenu.rect.x + this.contextMenu.rect.w,
-        this.pan.x
+        this.pan.x,
       ) &&
       this.isInBounds(
         e.clientY,
         this.contextMenu.rect.y,
         this.contextMenu.rect.y + this.contextMenu.rect.h,
-        this.pan.y
+        this.pan.y,
       )
     )
       this.contextMenu.onMouseDown()
     else this.contextMenu.hide()
 
     this.highlightedGraph?.onMouseDown()
-    this.interactingGraph = this.highlightedGraph
+    this.highlightedInfoModal?.onMouseDown()
+
+    this.interactingModal = this.highlightedGraph ?? this.highlightedInfoModal
   }
 
   public onMouseUp(e: MouseEvent) {
     e.preventDefault()
 
-    this.interactingGraph?.onMouseUp()
+    this.interactingModal?.onMouseUp()
   }
 
   public serialize() {
@@ -370,6 +432,7 @@ export class CanvasComponent implements AfterViewInit {
     this.highlightedGraph = undefined
     this.selectedNode = undefined
     this.selectedGraph = undefined
+    this.highlightedInfoModal = undefined
 
     this.pan = { x: 0, y: 0 }
     this.zoom = 1

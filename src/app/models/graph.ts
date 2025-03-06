@@ -17,7 +17,7 @@ export class Graph {
     name: string = '',
     nodes: Set<number> = new Set(),
     edges: Map<number, Set<number>> = new Map(),
-    type: GraphType = GraphType.Undirected
+    type: GraphType = GraphType.Undirected,
   ) {
     this.id = id
     this.name = name == '' ? `Graph ${id}` : name
@@ -58,6 +58,22 @@ export class Graph {
 
       if (this.edges.get(b)?.size === 0) this.edges.delete(b)
     }
+  }
+
+  public generateAdjacencyMatrix(): number[][] {
+    const matrix: number[][] = []
+
+    if (this.type === GraphType.Directed) {
+      this.nodes.forEach((node) => {
+        matrix.push(new Array(this.nodes.size).fill(0))
+
+        this.edges.get(node)?.forEach((neighbour) => {
+          matrix[node - 1][neighbour - 1] = 1
+        })
+      })
+    }
+
+    return matrix
   }
 
   public serialize() {

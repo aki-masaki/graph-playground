@@ -1,10 +1,9 @@
-import {Rect} from '../interfaces/rect'
-import {Graph, GraphType} from './graph'
-import {FONT, SIZE_HANDLER_THRESHOLD, VisualModal} from './visual-modal.model'
+import { Rect } from '../interfaces/rect'
+import { Graph, GraphType } from './graph'
+import { FONT, SIZE_HANDLER_THRESHOLD, VisualModal } from './visual-modal.model'
 
 const NODE_RADIUS = 25
 export const HEADER_HEIGHT = 50
-
 
 export class VisualNode {
   public id: number
@@ -21,7 +20,7 @@ export class VisualNode {
   public move(
     deltaX: number,
     deltaY: number,
-    limits: [[number, number], [number, number]]
+    limits: [[number, number], [number, number]],
   ) {
     this.x += deltaX
     this.y += deltaY
@@ -33,7 +32,7 @@ export class VisualNode {
   public draw(
     ctx: CanvasRenderingContext2D,
     offset: [number, number] = [0, 0],
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     ctx.save()
 
@@ -52,12 +51,12 @@ export class VisualNode {
     const textHeight =
       textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent
 
-    ctx.font = FONT;
+    ctx.font = FONT
     ctx.fillStyle = 'white'
     ctx.fillText(
       this.id.toString(),
       this.x + offset[0] - textWidth / 2,
-      this.y + offset[1] + textHeight / 2
+      this.y + offset[1] + textHeight / 2,
     )
 
     ctx.restore()
@@ -89,9 +88,9 @@ export class VisualGraph extends VisualModal {
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = {x: 0, y: 0, w: 300, h: 300}
+    rect: Rect = { x: 0, y: 0, w: 300, h: 300 },
   ) {
-    super(rect)
+    super(rect, undefined, graph.id)
 
     this.graph = graph
     this.nodes = nodes
@@ -151,7 +150,7 @@ export class VisualGraph extends VisualModal {
     a: [number, number],
     b: [number, number],
     offset: [number, number],
-    useCenter: [boolean, boolean] = [false, false]
+    useCenter: [boolean, boolean] = [false, false],
   ) {
     ctx.beginPath()
 
@@ -191,7 +190,7 @@ export class VisualGraph extends VisualModal {
     ctx.rotate(angle)
     ctx.translate(-ax, -ay)
 
-    ctx.font = FONT;
+    ctx.font = FONT
     ctx.fillStyle = 'white'
 
     const arrowWidth = ctx.measureText('🠂').width
@@ -205,8 +204,8 @@ export class VisualGraph extends VisualModal {
       node.draw(
         ctx,
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        this.highlightedNode?.id === node.id
-      )
+        this.highlightedNode?.id === node.id,
+      ),
     )
 
     let drawn = new Set<string>()
@@ -228,7 +227,7 @@ export class VisualGraph extends VisualModal {
           ctx,
           [node.x, node.y],
           [neighbour.x, neighbour.y],
-          [this.rect.x, this.rect.y + HEADER_HEIGHT]
+          [this.rect.x, this.rect.y + HEADER_HEIGHT],
         )
       })
     })
@@ -239,7 +238,7 @@ export class VisualGraph extends VisualModal {
         [this.connectNode.x, this.connectNode.y],
         [this.mouseX, this.mouseY - HEADER_HEIGHT],
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
-        [false, true]
+        [false, true],
       )
     }
   }
@@ -256,7 +255,7 @@ export class VisualGraph extends VisualModal {
   public override draw(
     ctx: CanvasRenderingContext2D,
     isSelected: boolean = false,
-    isHighlighted: boolean = false
+    isHighlighted: boolean = false,
   ) {
     super.draw(ctx, isSelected, isHighlighted, this.graph.name)
 
@@ -272,7 +271,7 @@ export class VisualGraph extends VisualModal {
 
   private isOverNode(
     relCoords: [number, number],
-    nodeCoords: [number, number]
+    nodeCoords: [number, number],
   ) {
     return (
       relCoords[0] > nodeCoords[0] - NODE_RADIUS &&
@@ -295,8 +294,7 @@ export class VisualGraph extends VisualModal {
       }
     }
 
-    if (this.highlightedNode)
-      this.draggedNode = this.highlightedNode
+    if (this.highlightedNode) this.draggedNode = this.highlightedNode
   }
 
   public override onMouseUp() {
@@ -313,7 +311,10 @@ export class VisualGraph extends VisualModal {
     }
   }
 
-  public override onMouseMove(relCoords: [number, number], delta: [number, number]) {
+  public override onMouseMove(
+    relCoords: [number, number],
+    delta: [number, number],
+  ) {
     super.onMouseMove(relCoords, delta)
 
     if (this.inConnectMode) {
@@ -338,6 +339,6 @@ export class VisualGraph extends VisualModal {
     if (this.draggedNode)
       this.draggedNode.move(delta[0], delta[1], this.getNodeLimits())
 
-    return false;
+    return false
   }
 }
