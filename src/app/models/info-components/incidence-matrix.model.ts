@@ -1,5 +1,5 @@
-import {GraphType} from '../graph'
-import {InfoComponent} from './info-component.model'
+import { GraphType } from '../graph'
+import { InfoComponent } from './info-component.model'
 
 export class IncidenceMatrixComponent extends InfoComponent {
   private rowWidth: number = 0
@@ -50,7 +50,15 @@ export class IncidenceMatrixComponent extends InfoComponent {
 
         for (let i = 0; i < neighbours.size; i++)
           ctx.fillText(
-            this.graph.type === GraphType.Undirected ? ((neighboursArr[i] === id || key === id) ? String(1) : String(0)) : (neighboursArr[i] === id ? String(1) : key === id ? String(-1) : String(0)),
+            this.graph.type === GraphType.Undirected
+              ? neighboursArr[i] === id || key === id
+                ? String(1)
+                : String(0)
+              : neighboursArr[i] === id
+                ? String(1)
+                : key === id
+                  ? String(-1)
+                  : String(0),
             offset[0] + 20 * (id - 1) + 50,
             offset[1] + 20 * (key + i - 1) + 40,
           )

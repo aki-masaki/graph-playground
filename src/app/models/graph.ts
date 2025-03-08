@@ -26,7 +26,7 @@ export class Graph {
     this.nodes = nodes
     this.edges = edges
 
-    this.edges.forEach(edge => {
+    this.edges.forEach((edge) => {
       this.edgeCount += edge.size
     })
   }

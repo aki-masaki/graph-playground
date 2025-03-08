@@ -29,15 +29,12 @@ export abstract class InfoComponent {
   private drawContainer(
     ctx: CanvasRenderingContext2D,
     offset: [number, number],
+    isHighlighted: boolean = false,
   ) {
+    ctx.fillStyle = isHighlighted ? '#3d3c3a' : '#33312e'
+
     ctx.beginPath()
-    ctx.roundRect(
-      this.rect.x + offset[0],
-      this.rect.y + offset[1],
-      this.rect.w,
-      this.rect.h,
-      10,
-    )
+    ctx.roundRect(offset[0], offset[1], this.rect.w, this.rect.h, 10)
     ctx.fill()
   }
 
@@ -57,17 +54,28 @@ export abstract class InfoComponent {
     ctx.restore()
   }
 
-  public draw(ctx: CanvasRenderingContext2D, offset: [number, number]) {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    offset: [number, number],
+    isHighlighted: boolean = false,
+  ) {
+    ctx.save()
+
     if (!this.ctx) this.ctx = ctx
+
+    offset[0] += this.rect.x
+    offset[1] += this.rect.y
 
     offset[1] += HEADER_HEIGHT
     offset[0] += 10
 
-    this.drawContainer(ctx, offset)
+    this.drawContainer(ctx, offset, isHighlighted)
     this.drawTitle(ctx, offset)
 
     offset[1] += INFO_COMPONENT_HEADER_HEIGHT
     this.drawContent(ctx, offset)
+
+    ctx.restore()
   }
 
   public update() {

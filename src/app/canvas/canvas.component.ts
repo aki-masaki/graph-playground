@@ -169,6 +169,30 @@ export class CanvasComponent implements AfterViewInit {
       ([graphId, nodeId]) =>
         this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true),
     )
+
+    this.contextMenu.addOption(
+      'info-modal',
+      'add-adjacency-matrix',
+      'Add Adjacency Matrix',
+      ([infoModalId]) =>
+        this.infoModals.get(infoModalId)!.addComponent('adjacency-matrix'),
+    )
+
+    this.contextMenu.addOption(
+      'info-modal',
+      'add-incidence-matrix',
+      'Add Incidence Matrix',
+      ([infoModalId]) =>
+        this.infoModals.get(infoModalId)!.addComponent('incidence-matrix'),
+    )
+
+    this.contextMenu.addOption(
+      'info-component',
+      'remove-info-component',
+      'Remove',
+      ([infoModalId, componentId]) =>
+        this.infoModals.get(infoModalId)!.removeComponent(componentId),
+    )
   }
 
   private drawBackground(ctx: CanvasRenderingContext2D) {
@@ -371,6 +395,15 @@ export class CanvasComponent implements AfterViewInit {
         [e.clientX, e.clientY],
       ])
       this.contextMenu.changeCollection('graph')
+    } else if (this.selectedInfoModal?.highlightedComponent) {
+      this.contextMenu.setData([
+        this.selectedInfoModal.id,
+        this.selectedInfoModal.highlightedComponent?.id,
+      ])
+      this.contextMenu.changeCollection('info-component')
+    } else if (this.selectedInfoModal) {
+      this.contextMenu.setData([this.selectedInfoModal.id])
+      this.contextMenu.changeCollection('info-modal')
     } else {
       this.contextMenu.setData([e.clientX, e.clientY])
       this.contextMenu.changeCollection('global')
