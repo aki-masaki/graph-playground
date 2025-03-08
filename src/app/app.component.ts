@@ -21,6 +21,11 @@ export type FileData = {
     id: number
     name: string
   }[]
+  infoModals: {
+    id: number
+    visualGraphId: number
+    rect: Rect
+  }[]
   canvas: {
     pan: { x: number; y: number }
     zoom: number
@@ -106,6 +111,9 @@ export class AppComponent implements AfterViewInit {
         value[1].serialize(),
       ),
       graphs: Array.from(this.graphs).map((value) => value[1].serialize()),
+      infoModals: Array.from(this.infoModals).map((value) =>
+        value[1].serialize(),
+      ),
       canvas: this.canvas.serialize(),
       selectedGraph: this.selectedGraph?.serialize(),
     })
@@ -144,6 +152,7 @@ export class AppComponent implements AfterViewInit {
 
     const graphs = new Map<number, Graph>()
     const visualGraphs = new Map<number, VisualGraph>()
+    const infoModals = new Map<number, InfoModal>()
 
     data.graphs.forEach((graph) => {
       graphs.set(
@@ -173,10 +182,23 @@ export class AppComponent implements AfterViewInit {
       )
     })
 
+    this.visualGraphs = visualGraphs
+
+    data.infoModals.forEach((modal) => {
+      infoModals.set(
+        modal.id,
+        new InfoModal(
+          visualGraphs.get(modal.visualGraphId)!,
+          modal.rect,
+          modal.id,
+        ),
+      )
+    })
+
     this.canvas.import(data.canvas)
 
     this.graphs = graphs
-    this.visualGraphs = visualGraphs
+    this.infoModals = infoModals
 
     if (data.selectedGraph)
       this.selectedGraph = new VisualGraph(
