@@ -10,6 +10,8 @@ export class Graph {
   public nodes: Set<number>
   public edges: Map<number, Set<number>>
 
+  public edgeCount: number = 0
+
   public type: GraphType = GraphType.Directed
 
   public constructor(
@@ -23,6 +25,10 @@ export class Graph {
     this.name = name == '' ? `Graph ${id}` : name
     this.nodes = nodes
     this.edges = edges
+
+    this.edges.forEach(edge => {
+      this.edgeCount += edge.size
+    })
   }
 
   public addNode(id: number) {
@@ -38,6 +44,8 @@ export class Graph {
     this.edges.get(a)!.add(b)
 
     if (this.type === GraphType.Undirected) this.edges.get(b)!.add(a)
+
+    this.edgeCount++
   }
 
   public removeNode(nodeId: number) {
