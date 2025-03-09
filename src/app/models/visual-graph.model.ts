@@ -1,6 +1,6 @@
-import { Rect } from '../interfaces/rect'
-import { Graph, GraphType } from './graph'
-import { FONT, SIZE_HANDLER_THRESHOLD, VisualModal } from './visual-modal.model'
+import {Rect} from '../interfaces/rect'
+import {Graph, GraphType} from './graph'
+import {FONT, SIZE_HANDLER_THRESHOLD, VisualModal} from './visual-modal.model'
 
 const NODE_RADIUS = 25
 export const HEADER_HEIGHT = 50
@@ -82,13 +82,18 @@ export class VisualGraph extends VisualModal {
   private inDisconnectMode: boolean = false
   private connectNode?: VisualNode
 
+  private inFindPathMode: boolean = false
+  private pathSourceNode?: VisualNode
+
   private mouseX: number = 0
   private mouseY: number = 0
+
+  public highlightedPath: number[] = []
 
   public constructor(
     graph: Graph,
     nodes: Map<number, VisualNode> = new Map(),
-    rect: Rect = { x: 0, y: 0, w: 300, h: 300 },
+    rect: Rect = {x: 0, y: 0, w: 300, h: 300},
   ) {
     super(rect, undefined, graph.id)
 
@@ -145,17 +150,33 @@ export class VisualGraph extends VisualModal {
     this.connectNode = undefined
   }
 
+  public enableFindPathMode(nodeId: number) {
+    this.inFindPathMode = true
+    this.pathSourceNode = this.nodes.get(nodeId)
+  }
+
+  public disableFindPathMode() {
+    this.inFindPathMode = false
+    this.pathSourceNode = undefined
+  }
+
   private drawEdge(
     ctx: CanvasRenderingContext2D,
     a: [number, number],
     b: [number, number],
     offset: [number, number],
-    useCenter: [boolean, boolean] = [false, false],
+    nodes: [number, number],
+    useCenter: [boolean, boolean] = [false, false]
   ) {
     ctx.beginPath()
 
     ctx.strokeStyle = 'white'
     ctx.lineWidth = 3
+
+    const nodeIndex = this.highlightedPath.indexOf(nodes[0])
+
+    if (nodeIndex !== -1 && this.highlightedPath[nodeIndex + 1] === nodes[1])
+      ctx.strokeStyle = 'blue'
 
     // Delta
     const dx = b[0] - a[0]
@@ -228,6 +249,7 @@ export class VisualGraph extends VisualModal {
           [node.x, node.y],
           [neighbour.x, neighbour.y],
           [this.rect.x, this.rect.y + HEADER_HEIGHT],
+          [node.id, neighbourId],
         )
       })
     })
@@ -238,6 +260,7 @@ export class VisualGraph extends VisualModal {
         [this.connectNode.x, this.connectNode.y],
         [this.mouseX, this.mouseY - HEADER_HEIGHT],
         [this.rect.x, this.rect.y + HEADER_HEIGHT],
+        [-1, -1],
         [false, true],
       )
     }
@@ -291,6 +314,11 @@ export class VisualGraph extends VisualModal {
         else this.graph.addEdge(this.connectNode.id, this.highlightedNode.id)
 
         this.disableConnectMode()
+      }
+    } else if (this.inFindPathMode && this.pathSourceNode) {
+      if (this.highlightedNode && this.highlightedNode.id !== this.pathSourceNode.id) {
+        this.highlightedPath = this.graph.reconstructPath(this.highlightedNode.id, this.graph.bfs(this.pathSourceNode.id)[1])
+        this.disableFindPathMode()
       }
     }
 

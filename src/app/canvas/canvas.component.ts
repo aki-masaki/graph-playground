@@ -7,15 +7,15 @@ import {
   Output,
   ViewChild,
 } from '@angular/core'
-import { Graph } from '../models/graph'
+import {Graph} from '../models/graph'
 import {
   HEADER_HEIGHT,
   VisualGraph,
   VisualNode,
 } from '../models/visual-graph.model'
-import { ContextMenu } from '../models/context-menu.model'
-import { InfoModal } from '../models/info-modal.model'
-import { VisualModal } from '../models/visual-modal.model'
+import {ContextMenu} from '../models/context-menu.model'
+import {InfoModal} from '../models/info-modal.model'
+import {VisualModal} from '../models/visual-modal.model'
 
 @Component({
   selector: 'app-canvas',
@@ -68,7 +68,7 @@ export class CanvasComponent implements AfterViewInit {
     [number, number]
   >()
 
-  public pan: { x: number; y: number } = { x: 50, y: 0 }
+  public pan: {x: number; y: number} = {x: 50, y: 0}
   public zoom: number = 2
 
   public contextMenu!: ContextMenu
@@ -119,13 +119,13 @@ export class CanvasComponent implements AfterViewInit {
             (mouseX -
               (this.pan.x +
                 this.visualGraphs.get(graphId)!.rect.x * this.zoom)) /
-              this.zoom,
+            this.zoom,
           ),
           Math.floor(
             (mouseY -
               (this.pan.y +
                 this.visualGraphs.get(graphId)!.rect.y * this.zoom)) /
-              this.zoom,
+            this.zoom,
           ) - HEADER_HEIGHT,
         ]
 
@@ -168,6 +168,13 @@ export class CanvasComponent implements AfterViewInit {
       'Disconnect',
       ([graphId, nodeId]) =>
         this.visualGraphs.get(graphId)!.enableConnectMode(nodeId, true),
+    )
+
+    this.contextMenu.addOption(
+      'node',
+      'find-shortest-path',
+      'Find shortest path',
+      ([graphId, startNodeId]) => this.visualGraphs.get(graphId)!.enableFindPathMode(startNodeId)
     )
 
     this.contextMenu.addOption(
@@ -296,11 +303,11 @@ export class CanvasComponent implements AfterViewInit {
       this.contextMenu.onMouseMove([
         Math.floor(
           (e.clientX - (this.pan.x + this.contextMenu.rect.x * this.zoom)) /
-            this.zoom,
+          this.zoom,
         ),
         Math.floor(
           (e.clientY - (this.pan.y + this.contextMenu.rect.y * this.zoom)) /
-            this.zoom,
+          this.zoom,
         ),
       ])
     else this.contextMenu.highlightedOption = undefined
@@ -313,12 +320,12 @@ export class CanvasComponent implements AfterViewInit {
         Math.floor(
           (e.clientX -
             (this.pan.x + this.interactingModal.rect.x * this.zoom)) /
-            this.zoom,
+          this.zoom,
         ),
         Math.floor(
           (e.clientY -
             (this.pan.y + this.interactingModal.rect.y * this.zoom)) /
-            this.zoom,
+          this.zoom,
         ),
       ],
       [e.movementX / this.zoom, e.movementY / this.zoom],
@@ -454,7 +461,7 @@ export class CanvasComponent implements AfterViewInit {
     }
   }
 
-  public import(data: { pan: { x: number; y: number }; zoom: number }) {
+  public import(data: {pan: {x: number; y: number}; zoom: number}) {
     this.reset()
 
     this.pan = data.pan
@@ -467,7 +474,7 @@ export class CanvasComponent implements AfterViewInit {
     this.selectedGraph = undefined
     this.highlightedInfoModal = undefined
 
-    this.pan = { x: 0, y: 0 }
+    this.pan = {x: 0, y: 0}
     this.zoom = 1
   }
 }

@@ -66,6 +66,8 @@ export class Graph {
 
       if (this.edges.get(b)?.size === 0) this.edges.delete(b)
     }
+
+    this.edgeCount--
   }
 
   public generateAdjacencyMatrix(): number[][] {
@@ -82,6 +84,43 @@ export class Graph {
     }
 
     return matrix
+  }
+
+  public bfs(start: number): [number[], number[]] {
+    const dist = new Array(this.nodes.size).fill(Infinity)
+    const par = new Array(this.nodes.size).fill(-1)
+
+    const q = []
+    dist[start - 1] = 0;
+    q.push(start - 1)
+
+    while (q.length > 0) {
+      const node = q.shift()!
+
+      this.edges.get(node + 1)?.forEach(neighbour => {
+        const neighbourIndex = neighbour - 1
+
+        if (dist[neighbourIndex] === Infinity) {
+          par[neighbourIndex] = node;
+          dist[neighbourIndex] = dist[node] + 1;
+          q.push(neighbourIndex)
+        }
+      })
+    }
+
+    return [dist, par]
+  }
+
+  public reconstructPath(end: number, parents: number[]) {
+    const path = []
+    let node = end - 1
+
+    while (node !== -1) {
+      path.push(node + 1)
+      node = parents[node]
+    }
+
+    return path.reverse()
   }
 
   public serialize() {
